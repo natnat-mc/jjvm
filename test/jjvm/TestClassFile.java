@@ -2,11 +2,12 @@ package jjvm;
 
 import com.github.natnatMc.jjvm.classFile.ClassFile;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 
 public class TestClassFile implements Runnable {
 	
-	public static void main(String[] args) throws IOException, IllegalArgumentException, IllegalAccessException {
+	public static void main(String[] args) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
 		ClassFile cFile=new ClassFile();
 		FileInputStream in=new FileInputStream(new File("bin/jjvm/TestClassFile.class"));
 		DataInputStream din=new DataInputStream(in);
@@ -36,8 +37,9 @@ public class TestClassFile implements Runnable {
 				Class<?> c=defineClass("jjvm.TestClassFile", b, 0, b.length);
 				Class<?> m=TestClassFile.class;
 				if(!c.getName().equals(m.getName())) throw new RuntimeException("Wrong name");
+				c.getDeclaredMethod("ttt").invoke(null);
 				
-				System.out.println("All good!");
+				System.out.println("If written 6 abobe, it is all good!");
 			}
 		};
 	}
