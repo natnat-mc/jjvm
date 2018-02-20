@@ -5,7 +5,7 @@ import java.nio.*;
 
 import com.github.natnatMc.jjvm.struct.CONSTANT_Utf8_info;
 
-class ClassAttribute {
+public class ClassAttribute {
 	
 	public int len;
 	public String name;

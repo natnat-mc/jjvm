@@ -2,7 +2,7 @@ package com.github.natnatMc.jjvm.classFile;
 
 import java.util.ArrayList;
 
-class ClassMethod {
+public class ClassMethod {
 
 	public int flags;
 	public String name;

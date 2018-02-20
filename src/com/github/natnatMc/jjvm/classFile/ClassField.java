@@ -2,7 +2,7 @@ package com.github.natnatMc.jjvm.classFile;
 
 import java.util.*;
 
-class ClassField {
+public class ClassField {
 	
 	public int flags;
 	public String name;

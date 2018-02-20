@@ -200,6 +200,27 @@ public class ClassFile {
 	public ConstantPool getPool() {
 		return constantPool;
 	}
+	public String getName() {
+		return className;
+	}
+	public String getSuper() {
+		return superName;
+	}
+	public int getFlags() {
+		return flags;
+	}
+	public String[] getInterfaces() {
+		return interfaces.toArray(new String[0]);
+	}
+	public ClassField[] getFields() {
+		return fields.toArray(new ClassField[0]);
+	}
+	public ClassMethod[] getMethods() {
+		return methods.toArray(new ClassMethod[0]);
+	}
+	public ClassAttribute[] getAttributes() {
+		return attributes.toArray(new ClassAttribute[0]);
+	}
 	
 	public void dump(PrintStream out) {
 		out.print("Class version: ");
