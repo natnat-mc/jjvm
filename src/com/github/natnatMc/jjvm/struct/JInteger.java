@@ -1,38 +1,37 @@
-package com.github.natnatMc.jjvm;
+package com.github.natnatMc.jjvm.struct;
 
-public class JDecimal extends JObject {
+public class JInteger extends JObject {
 	
-	private double value;
+	private long value;
 	
-	public JDecimal(double d) {
+	public JInteger(long d) {
 		this.value=d;
 	}
 	
 	@Override
 	public String toString() {
-		return Double.toString(value);
+		return Long.toString(value);
 	}
 	
 	@Override
 	public boolean isNumber() {
 		return true;
 	}
-	
 	@Override
 	public JDecimal toDecimal() {
-		return this;
+		return new JDecimal((double) value);
 	}
 	@Override
 	public JInteger toInteger() {
-		return new JInteger((long) value);
+		return this;
 	}
 	@Override
 	public long toLong() {
-		return (long) value;
+		return value;
 	}
 	@Override
 	public double toDouble() {
-		return value;
+		return (double) value;
 	}
 	@Override
 	public int toInt() {
@@ -52,7 +51,7 @@ public class JDecimal extends JObject {
 	}
 	@Override
 	public boolean toBoolean() {
-		return value!=0.0;
+		return value!=0L;
 	}
 	@Override
 	public byte toByte() {

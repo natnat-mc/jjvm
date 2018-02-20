@@ -1,4 +1,4 @@
-package com.github.natnatMc.jjvm;
+package com.github.natnatMc.jjvm.struct;
 
 public abstract class JObject {
 	
