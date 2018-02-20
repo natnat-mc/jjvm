@@ -41,14 +41,14 @@ public class ClassFile {
 		int pos=in.readUnsignedShort();
 		CONSTANT_Class_info info=(CONSTANT_Class_info) constantPool.get(pos);
 		CONSTANT_Utf8_info utf8=(CONSTANT_Utf8_info) constantPool.get(info.pos);
-		className=utf8.value;
+		className=utf8.value.replaceAll("/", ".");
 		
 		//superclass name
 		pos=in.readUnsignedShort();
 		if(pos!=0) {
 			info=(CONSTANT_Class_info) constantPool.get(pos);
 			utf8=(CONSTANT_Utf8_info) constantPool.get(info.pos);
-			superName=utf8.value;
+			superName=utf8.value.replaceAll("/", ".");
 		}
 		
 		//interfaces
@@ -57,7 +57,7 @@ public class ClassFile {
 			pos=in.readUnsignedShort();
 			info=(CONSTANT_Class_info) constantPool.get(pos);
 			utf8=(CONSTANT_Utf8_info) constantPool.get(info.pos);
-			interfaces.add(utf8.value);
+			interfaces.add(utf8.value.replaceAll("/", "."));
 		}
 	}
 	
