@@ -1,22 +1,25 @@
 package com.github.natnatMc.jjvm.interpreter;
 
 import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import com.github.natnatMc.jjvm.classFile.*;
 import com.github.natnatMc.jjvm.exceptions.MalformedClassException;
 import com.github.natnatMc.jjvm.flags.ClassFlags;
 
 public class JClass {
-	private ConstantPool pool;
+	protected ConstantPool pool;
 	
-	private String name;
-	private String superName;
-	private String[] interfaces;
+	protected String name;
+	protected String superName;
+	protected String[] interfaces;
 	
-	private int flags;
+	protected int flags;
 	
-	private JMethod[] methods;
-	private JField[] fields;
+	protected JMethod[] methods;
+	protected JField[] fields;
 	
 	public JClass(ClassFile f) throws MalformedClassException {
 		pool=f.getPool();
@@ -42,6 +45,25 @@ public class JClass {
 			fields[i]=new JField();
 			fields[i].read(cf[i], pool);
 		}
+	}
+	
+	public String getName() {
+		return name;
+	}
+	public String getSuper() {
+		return superName;
+	}
+	public List<String> getInterfaces() {
+		return Collections.unmodifiableList(Arrays.asList(interfaces));
+	}
+	public int getFlags() {
+		return flags;
+	}
+	public List<JField> getFields() {
+		return Collections.unmodifiableList(Arrays.asList(fields));
+	}
+	public List<JMethod> getMethods() {
+		return Collections.unmodifiableList(Arrays.asList(methods));
 	}
 	
 	public void dump(PrintStream out) {

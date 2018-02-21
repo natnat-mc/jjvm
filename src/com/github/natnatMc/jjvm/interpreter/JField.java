@@ -54,4 +54,14 @@ public class JField {
 		}
 	}
 	
+	public String getName() {
+		return name;
+	}
+	public String getType() {
+		return type;
+	}
+	public JObject getConstantValue() {
+		return constant;
+	}
+	
 }

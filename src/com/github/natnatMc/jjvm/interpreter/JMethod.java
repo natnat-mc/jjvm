@@ -60,7 +60,20 @@ public class JMethod {
 		}
 	}
 	
-	protected static String readType(IntHolder pos, String desc) throws MalformedClassException {
+	public String getName() {
+		return name;
+	}
+	public String getType() {
+		return returnType;
+	}
+	public List<String> getParameters() {
+		return Collections.unmodifiableList(Arrays.asList(parameterTypes));
+	}
+	public List<String> getExceptions() {
+		return Collections.unmodifiableList(Arrays.asList(exceptions));
+	}
+	
+	public static String readType(IntHolder pos, String desc) throws MalformedClassException {
 		char c=desc.charAt(pos.value++);
 		switch(c) {
 			case 'B':
