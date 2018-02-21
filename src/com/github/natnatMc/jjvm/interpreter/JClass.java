@@ -1,8 +1,7 @@
 package com.github.natnatMc.jjvm.interpreter;
 
 import com.github.natnatMc.jjvm.classFile.*;
-
-import exceptions.MalformedClassException;
+import com.github.natnatMc.jjvm.exceptions.MalformedClassException;
 
 public class JClass {
 	private ConstantPool pool;

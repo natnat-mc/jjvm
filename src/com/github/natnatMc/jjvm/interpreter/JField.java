@@ -4,6 +4,7 @@ import com.github.natnatMc.jjvm.classFile.ClassAttribute;
 import com.github.natnatMc.jjvm.classFile.ClassField;
 import com.github.natnatMc.jjvm.classFile.ConstantPool;
 import com.github.natnatMc.jjvm.classFile.ConstantPoolObject;
+import com.github.natnatMc.jjvm.exceptions.MalformedClassException;
 import com.github.natnatMc.jjvm.struct.CONSTANT_Double_info;
 import com.github.natnatMc.jjvm.struct.CONSTANT_Float_info;
 import com.github.natnatMc.jjvm.struct.CONSTANT_Integer_info;
@@ -15,8 +16,6 @@ import com.github.natnatMc.jjvm.types.JDecimal;
 import com.github.natnatMc.jjvm.types.JInteger;
 import com.github.natnatMc.jjvm.types.JObject;
 import com.github.natnatMc.jjvm.types.JString;
-
-import exceptions.MalformedClassException;
 
 public class JField {
 	
