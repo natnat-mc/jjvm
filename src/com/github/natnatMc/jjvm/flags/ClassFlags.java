@@ -61,7 +61,7 @@ public class ClassFlags {
 		else if(isPrivate(flags)) list.add("private");
 		else if(isProtected(flags)) list.add("protected");
 		if(isStatic(flags)) list.add("static");
-		else if(isFinal(flags)) list.add("final");
+		if(isFinal(flags)) list.add("final");
 		if(isVolatile(flags)) list.add("volatile");
 		if(isTransient(flags)) list.add("transient");
 		StringBuilder b=new StringBuilder();

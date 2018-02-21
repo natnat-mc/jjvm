@@ -54,7 +54,7 @@ public class JMethod {
 					int p=attr.data.getChar();
 					CONSTANT_Class_info info=(CONSTANT_Class_info) pool.get(p);
 					CONSTANT_Utf8_info utf8=(CONSTANT_Utf8_info) pool.get(info.pos);
-					exceptions[i]=utf8.value;
+					exceptions[i]=utf8.value.replaceAll("/", ".");
 				}
 			}
 		}
@@ -82,18 +82,17 @@ public class JMethod {
 			case '[':
 				return readType(pos, desc)+"[]";
 		}
-		if(c=='J') {
+		if(c=='L') {
 			String name="";
 			while(pos.value<desc.length()) {
-				pos.value++;
-				c=desc.charAt(pos.value);
+				c=desc.charAt(pos.value++);
 				if(c==';') break;
 				if(c=='/') name+='.';
 				else name+=c;
 			}
 			return name;
 		} else {
-			throw new MalformedClassException("unknown descriptor found");
+			throw new MalformedClassException("unknown descriptor found :"+c);
 		}
 	}
 }
