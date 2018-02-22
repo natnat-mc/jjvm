@@ -13,7 +13,7 @@ public class OpCodes {
 	public static final byte anewarray=		(byte) 0xbd;	//create new array of reference
 	public static final byte areturn=		(byte) 0xb0;	//return reference from method
 	public static final byte arraylength=	(byte) 0xbe;	//get length of array
-	public static final byte astore=		(byte) 0x34;	//store reference into local variable
+	public static final byte astore=		(byte) 0x3a;	//store reference into local variable
 	public static final byte astore_0=		(byte) 0x4b;
 	public static final byte astore_1=		(byte) 0x4c;
 	public static final byte astore_2=		(byte) 0x4d;

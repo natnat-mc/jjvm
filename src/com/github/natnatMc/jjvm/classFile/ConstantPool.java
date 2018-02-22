@@ -143,4 +143,20 @@ public class ConstantPool {
 		}
 	}
 	
+	public ConstantPool clone() {
+		ConstantPool clone=new ConstantPool();
+		try {
+			ByteArrayOutputStream baos=new ByteArrayOutputStream();
+			export(new DataOutputStream(baos));
+			baos.close();
+			ByteArrayInputStream bais=new ByteArrayInputStream(baos.toByteArray());
+			clone.read(new DataInputStream(bais));
+			bais.close();
+		} catch(IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return clone;
+	}
+	
 }

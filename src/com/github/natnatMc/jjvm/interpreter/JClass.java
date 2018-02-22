@@ -65,6 +65,9 @@ public class JClass {
 	public List<JMethod> getMethods() {
 		return Collections.unmodifiableList(Arrays.asList(methods));
 	}
+	public ConstantPool getConstantPool() {
+		return pool.clone();
+	}
 	
 	public void dump(PrintStream out) {
 		out.print(ClassFlags.toStringClass(flags));

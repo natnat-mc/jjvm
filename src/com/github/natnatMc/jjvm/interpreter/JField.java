@@ -63,5 +63,8 @@ public class JField {
 	public JObject getConstantValue() {
 		return constant;
 	}
+	public int getFlags() {
+		return flags;
+	}
 	
 }

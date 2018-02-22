@@ -55,4 +55,19 @@ public class JCode {
 		//don't read any attribute, as we don't *need* them
 	}
 	
+	public JCode clone() {
+		JCode clone=new JCode();
+		clone.codeLen=codeLen;
+		clone.exceptionTableLen=exceptionTableLen;
+		clone.maxLocals=maxLocals;
+		clone.maxStack=maxStack;
+		clone.code=ByteBuffer.allocate(codeLen);
+		clone.code.put(code.array());
+		clone.exceptionTable=new JExceptionHandler[exceptionTable.length];
+		for(int i=0; i<exceptionTable.length; i++) {
+			clone.exceptionTable[i]=exceptionTable[i].clone();
+		}
+		return clone;
+	}
+	
 }

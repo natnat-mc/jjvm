@@ -15,7 +15,7 @@ public class JMethod {
 	protected int flags;
 	
 	protected JCode code;
-	protected String[] exceptions;
+	protected String[] exceptions=new String[0];
 	
 	protected String name;
 	protected String[] parameterTypes;
@@ -71,6 +71,12 @@ public class JMethod {
 	}
 	public List<String> getExceptions() {
 		return Collections.unmodifiableList(Arrays.asList(exceptions));
+	}
+	public int getFlags() {
+		return flags;
+	}
+	public JCode getCode() {
+		return code.clone();
 	}
 	
 	public static String readType(IntHolder pos, String desc) throws MalformedClassException {
