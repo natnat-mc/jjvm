@@ -161,19 +161,33 @@ public class Disassembler {
 	}
 	
 	public static void disassemble(JCode code, ConstantPool pool, PrintStream out, String indent, boolean printPos) {
+		for (JExceptionHandler handler:code.exceptionTable) {
+			out.print(indent);
+			out.print("@Exception handler 0x");
+			out.print(Integer.toHexString(handler.startPC));
+			out.print("-0x");
+			out.print(Integer.toHexString(handler.endPC));
+			out.print(" goto 0x");
+			out.print(Integer.toHexString(handler.handlerPC));
+			if(handler.exceptionType!=null) {
+				out.print(" type ");
+				out.print(handler.exceptionType);
+			}
+			out.println();
+		}
 		int pos=0;
 		boolean wide=false;
 		ByteBuffer buf=code.code;
 		while(pos<code.codeLen) {
 			//read opcode
-			int op=buf.get(pos++)&0xff;
-			JOpCode opcode=JOpCode.getByOpCode(op);
+			int op=buf.get(pos++);
+			JOpCode opcode=JOpCode.getByOpCode(op&0xff);
 			
 			//indent asm
 			out.print(indent);
 			
 			if(printPos) {
-				String posStr=Integer.toHexString(pos);
+				String posStr=Integer.toHexString(pos-1);
 				while(posStr.length()<4) posStr="0"+posStr;
 				out.print(posStr);
 				out.print(' ');
@@ -195,7 +209,46 @@ public class Disassembler {
 			if(op==OpCodes.wide) wide=true;
 			
 			if(opcode.isVarArg()) {
-				out.print(" [vararg]");	//FIXME handle varargs
+				if(op==OpCodes.lookupswitch) {
+					pos+=(4-pos%4)%4;
+					out.print(" 0x");
+					out.print(Integer.toHexString(buf.getInt(pos)));
+					pos+=4;
+					int len=buf.getInt(pos);
+					pos+=4;
+					for(int i=0; i<len; i++) {
+						out.print(" (0x");
+						out.print(Integer.toHexString(buf.getInt(pos)));
+						pos+=4;
+						out.print(": 0x");
+						out.print(Integer.toHexString(buf.getInt(pos)));
+						pos+=4;
+						out.print(")");
+					}
+				} else if(op==OpCodes.tableswitch) {
+					pos+=(4-pos%4)%4;
+					out.print(" 0x");
+					out.print(Integer.toHexString(buf.getInt(pos)));
+					pos+=4;
+					int low=buf.getInt(pos);
+					pos+=4;
+					int high=buf.getInt(pos);
+					pos+=4;
+					out.print(" 0x");
+					out.print(Integer.toHexString(low));
+					out.print(" 0x");
+					out.print(Integer.toHexString(high));
+					out.print(" (");
+					int len=high-low+1;
+					for(int i=0; i<len; i++) {
+						out.print("0x");
+						out.print(Integer.toHexString(buf.getInt(pos)));
+						pos+=4;
+					}
+					out.print(")");
+				} else {
+					out.print(" [VarArg]");
+				}
 			}
 			char[] args;
 			if(wide) args=opcode.getWideArguments();
@@ -207,7 +260,6 @@ public class Disassembler {
 			}
 			
 			for(int i=0; i<args.length; i++) {
-				out.print(' ');
 				int val=0;
 				switch(args[i]) {
 					case 'U':
@@ -217,18 +269,22 @@ public class Disassembler {
 						val=buf.get(pos++);
 						break;
 					case 'C':
-						val=buf.getChar(pos++);
+						val=buf.getChar(pos);
+						pos+=2;
 						break;
 					case 'S':
-						val=buf.getShort(pos++);
+						val=buf.getShort(pos);
+						pos+=2;
 						break;
 					case 'I':
-						val=buf.getInt(pos++);
+						val=buf.getInt(pos);
+						pos+=4;
 						break;
 					case '0':
 						val=buf.get(pos++);
-						break;
+						continue;
 				}
+				out.print(' ');
 				if(i!=0||!opcode.isFromPool()) {
 					out.print("0x");
 					out.print(Integer.toHexString(val));
@@ -251,10 +307,41 @@ public class Disassembler {
 			if(obj instanceof CONSTANT_Class_info) {
 				int pos=((CONSTANT_Class_info) obj).pos;
 				return ((CONSTANT_Utf8_info) pool.get(pos)).value;
-			}
-			if(obj instanceof CONSTANT_String_info) {
+			} else if(obj instanceof CONSTANT_String_info) {
 				int pos=((CONSTANT_String_info) obj).stringIndex;
 				return '"'+((CONSTANT_Utf8_info) pool.get(pos)).value+'"';
+			} else if(obj instanceof CONSTANT_Methodref_info) {
+				CONSTANT_Methodref_info info=(CONSTANT_Methodref_info) obj;
+				CONSTANT_Class_info cRef=(CONSTANT_Class_info) pool.get(info.classIndex);
+				CONSTANT_Utf8_info cName=(CONSTANT_Utf8_info) pool.get(cRef.pos);
+				CONSTANT_NameAndType_info ntRef=(CONSTANT_NameAndType_info) pool.get(info.nameAndTypeIndex);
+				CONSTANT_Utf8_info nRef=(CONSTANT_Utf8_info) pool.get(ntRef.nameIndex);
+				CONSTANT_Utf8_info tRef=(CONSTANT_Utf8_info) pool.get(ntRef.descriptorIndex);
+				return cName.value+":"+nRef.value+":"+tRef.value;
+			} else if(obj instanceof CONSTANT_InterfaceMethodref_info) {
+				CONSTANT_InterfaceMethodref_info info=(CONSTANT_InterfaceMethodref_info) obj;
+				CONSTANT_Class_info cRef=(CONSTANT_Class_info) pool.get(info.classIndex);
+				CONSTANT_Utf8_info cName=(CONSTANT_Utf8_info) pool.get(cRef.pos);
+				CONSTANT_NameAndType_info ntRef=(CONSTANT_NameAndType_info) pool.get(info.nameAndTypeIndex);
+				CONSTANT_Utf8_info nRef=(CONSTANT_Utf8_info) pool.get(ntRef.nameIndex);
+				CONSTANT_Utf8_info tRef=(CONSTANT_Utf8_info) pool.get(ntRef.descriptorIndex);
+				return cName.value+":"+nRef.value+":"+tRef.value;
+			} else if(obj instanceof CONSTANT_Fieldref_info) {
+				CONSTANT_Fieldref_info info=(CONSTANT_Fieldref_info) obj;
+				CONSTANT_Class_info cRef=(CONSTANT_Class_info) pool.get(info.classIndex);
+				CONSTANT_Utf8_info cName=(CONSTANT_Utf8_info) pool.get(cRef.pos);
+				CONSTANT_NameAndType_info ntRef=(CONSTANT_NameAndType_info) pool.get(info.nameAndTypeIndex);
+				CONSTANT_Utf8_info nRef=(CONSTANT_Utf8_info) pool.get(ntRef.nameIndex);
+				CONSTANT_Utf8_info tRef=(CONSTANT_Utf8_info) pool.get(ntRef.descriptorIndex);
+				return cName.value+":"+nRef.value+":"+tRef.value;
+			} else if(obj instanceof CONSTANT_Integer_info) {
+				return ((CONSTANT_Integer_info) obj).bytes+"";
+			} else if(obj instanceof CONSTANT_Long_info) {
+				return ((CONSTANT_Long_info) obj).bytes+"L";
+			} else if(obj instanceof CONSTANT_Float_info) {
+				return ((CONSTANT_Float_info) obj).bytes+"f";
+			} else if(obj instanceof CONSTANT_Double_info) {
+				return ((CONSTANT_Double_info) obj).bytes+"";
 			}
 			return "["+obj.getClass().getSimpleName()+"]@"+index;
 		} catch(IndexOutOfBoundsException e) {
@@ -263,9 +350,10 @@ public class Disassembler {
 	}
 	
 	private static void printUsage() {
-		System.err.println("Usage: java jjvm.Disassembler <input> <output>");
+		System.err.println("Usage: java jjvm.Disassembler <input> <output> [opCode]");
 		System.err.println("\tWhere <input> is the input class");
-		System.err.println("\tand <output> is the output file");
+		System.err.println("\t<output> is the output file");
+		System.err.println("\tand [opCode] is the opCode list file");
 	}
 	
 }
