@@ -26,6 +26,8 @@ public class JField {
 	
 	protected JObject constant;
 	
+	protected boolean ro;
+	
 	void read(ClassField field, ConstantPool pool) throws MalformedClassException {
 		flags=field.flags;
 		name=field.name;
@@ -52,6 +54,7 @@ public class JField {
 				}
 			}
 		}
+		ro=true;
 	}
 	
 	public String getName() {
@@ -65,6 +68,22 @@ public class JField {
 	}
 	public int getFlags() {
 		return flags;
+	}
+	
+	public void setName(String name) {
+		if(ro) throw new IllegalStateException("Cannot modify ro class");
+		this.name=name;
+	}
+	public void setType(String type) {
+		if(ro) throw new IllegalStateException("Cannot modify ro class");
+		this.type=type;
+	}
+	public void setConstantValue(JObject obj) {
+		if(ro) throw new IllegalStateException("Cannot modify ro class");
+		this.constant=obj;
+	}
+	public void setFlags(int flags) {
+		this.flags=flags;
 	}
 	
 }

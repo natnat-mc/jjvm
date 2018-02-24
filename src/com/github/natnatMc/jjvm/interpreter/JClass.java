@@ -21,7 +21,20 @@ public class JClass {
 	protected JMethod[] methods;
 	protected JField[] fields;
 	
+	protected boolean ro;
+	
+	public JClass() {
+		pool=new ConstantPool();
+		interfaces=new String[0];
+		methods=new JMethod[0];
+		fields=new JField[0];
+		ro=false;
+	}
+	
 	public JClass(ClassFile f) throws MalformedClassException {
+		this(f, true);
+	}
+	public JClass(ClassFile f, boolean protect) throws MalformedClassException {
 		pool=f.getPool();
 		
 		flags=f.getFlags();
@@ -45,6 +58,7 @@ public class JClass {
 			fields[i]=new JField();
 			fields[i].read(cf[i], pool);
 		}
+		ro=protect;
 	}
 	
 	public String getName() {
@@ -54,19 +68,48 @@ public class JClass {
 		return superName;
 	}
 	public List<String> getInterfaces() {
-		return Collections.unmodifiableList(Arrays.asList(interfaces));
+		return ro?Collections.unmodifiableList(Arrays.asList(interfaces)):Arrays.asList(interfaces);
 	}
 	public int getFlags() {
 		return flags;
 	}
 	public List<JField> getFields() {
-		return Collections.unmodifiableList(Arrays.asList(fields));
+		return ro?Collections.unmodifiableList(Arrays.asList(fields)):Arrays.asList(fields);
 	}
 	public List<JMethod> getMethods() {
-		return Collections.unmodifiableList(Arrays.asList(methods));
+		return ro?Collections.unmodifiableList(Arrays.asList(methods)):Arrays.asList(methods);
 	}
 	public ConstantPool getConstantPool() {
-		return pool.clone();
+		return ro?pool.clone():pool;
+	}
+	
+	public void setName(String name) {
+		if(ro) throw new IllegalStateException("Cannot modify ro class");
+		this.name=name;
+	}
+	public void setSuper(String superName) {
+		if(ro) throw new IllegalStateException("Cannot modify ro class");
+		this.superName=superName;
+	}
+	public void setInterfaces(List<String> interfaces) {
+		if(ro) throw new IllegalStateException("Cannot modify ro class");
+		this.interfaces=interfaces.toArray(new String[0]);
+	}
+	public void setFlags(int flags) {
+		if(ro) throw new IllegalStateException("Cannot modify ro class");
+		this.flags=flags;
+	}
+	public void setFields(List<JField> fields) {
+		if(ro) throw new IllegalStateException("Cannot modify ro class");
+		this.fields=fields.toArray(new JField[0]);
+	}
+	public void setMethods(List<JMethod> methods) {
+		if(ro) throw new IllegalStateException("Cannot modify ro class");
+		this.methods=methods.toArray(new JMethod[0]);
+	}
+	public void setConstantPool(ConstantPool pool) {
+		if(ro) throw new IllegalStateException("Cannot modify ro class");
+		this.pool=pool;
 	}
 	
 	public void dump(PrintStream out) {

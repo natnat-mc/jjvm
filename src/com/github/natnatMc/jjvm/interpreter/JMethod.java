@@ -21,6 +21,8 @@ public class JMethod {
 	protected String[] parameterTypes;
 	protected String returnType;
 	
+	protected boolean ro;
+	
 	void read(ClassMethod method, ConstantPool pool) throws MalformedClassException {
 		//set method name
 		name=method.name;
@@ -58,6 +60,7 @@ public class JMethod {
 				}
 			}
 		}
+		ro=true;
 	}
 	
 	public String getName() {
@@ -77,6 +80,31 @@ public class JMethod {
 	}
 	public JCode getCode() {
 		return code.clone();
+	}
+	
+	public void setName(String name) {
+		if(ro) throw new IllegalStateException("Cannot modify ro class");
+		this.name=name;
+	}
+	public void setType(String type) {
+		if(ro) throw new IllegalStateException("Cannot modify ro class");
+		this.returnType=type;
+	}
+	public void setParameters(List<String> params) {
+		if(ro) throw new IllegalStateException("Cannot modify ro class");
+		this.parameterTypes=params.toArray(new String[0]);
+	}
+	public void setExceptions(List<String> exceptions) {
+		if(ro) throw new IllegalStateException("Cannot modify ro class");
+		this.exceptions=exceptions.toArray(new String[0]);
+	}
+	public void setFlags(int flags) {
+		if(ro) throw new IllegalStateException("Cannot modify ro class");
+		this.flags=flags;
+	}
+	public void setCode(JCode code) {
+		if(ro) throw new IllegalStateException("Cannot modify ro class");
+		this.code=code;
 	}
 	
 	public static String readType(IntHolder pos, String desc) throws MalformedClassException {
