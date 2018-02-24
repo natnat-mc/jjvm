@@ -24,8 +24,7 @@ public class ConstantPool {
 		int index=objects.indexOf(obj);
 		if(index!=-1) return index+1;
 		objects.add(obj);
-		index=objects.indexOf(obj);
-		return index+1;
+		return objects.size();
 	}
 	private void put(ConstantPoolObject obj) {
 		objects.add(obj);
@@ -75,7 +74,7 @@ public class ConstantPool {
 		int tPos=requireUtf8(type);
 		CONSTANT_NameAndType_info info=new CONSTANT_NameAndType_info();
 		info.nameIndex=nPos;
-		info.type=tPos;
+		info.descriptorIndex=tPos;
 		return require(info);
 	}
 	

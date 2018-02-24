@@ -72,6 +72,41 @@ public class ClassFlags {
 		return b.toString();
 	}
 	
+	public static int getFlag(String keyword) {
+		switch(keyword) {
+			case "public":
+				return ACC_PUBLIC;
+			case "private":
+				return ACC_PRIVATE;
+			case "protected":
+				return ACC_PROTECTED;
+			case "static":
+				return ACC_STATIC;
+			case "final":
+				return ACC_FINAL;
+			case "super":
+				return ACC_SUPER;
+			case "synchronized":
+				return ACC_SYNCHRONIZED;
+			case "volatile":
+				return ACC_VOLATILE;
+			case "transient":
+				return ACC_TRANSIENT;
+			case "native":
+				return ACC_NATIVE;
+			case "interface":
+				return ACC_INTERFACE;
+			case "abstract":
+				return ACC_ABSTRACT;
+			case "strict":
+				return ACC_STRICT;
+			case "strictfp":
+				return ACC_STRICT;
+			default:
+				return 0;
+		}
+	}
+	
 	public static boolean hasFlags(int val, int flags) {
 		return (val&flags)==flags;
 	}
