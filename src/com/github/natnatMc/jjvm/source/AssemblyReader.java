@@ -126,6 +126,27 @@ public class AssemblyReader {
 				continue;
 			}
 			
+			//read max stack and max locals
+			Matcher maxStackOrLocals=PATTERN_MAX_STACK_OR_LOCAL.matcher(line);
+			if(maxStackOrLocals.matches()) {
+				//first group is the type
+				String stackOrLocal=maxStackOrLocals.group(1);
+				
+				//second group is the value
+				int val=getInt(maxStackOrLocals.group(2));
+				
+				//set the given value
+				if(stackOrLocal.equals("Stack")) {
+					code.maxStack=val;
+				} else {
+					code.maxLocals=val;
+				}
+				
+				//onto next line
+				line=reader.readLine();
+				continue;
+			}
+			
 			//read opcode or mnemonic
 			String[] op=line.split("\\s+", 2);
 			JOpCode opCode;
@@ -312,6 +333,7 @@ public class AssemblyReader {
 					int arg=getInt(matcher.group(1));
 					switch(args[i]) {
 						case 'U':
+						case 'B':
 							dout.writeByte(arg&0xff);
 							break;
 						case 'C':
@@ -323,6 +345,9 @@ public class AssemblyReader {
 						case 'I':
 							dout.writeInt(arg);
 							break;
+						default:
+							System.err.println(args[i]+" not handled");
+							System.exit(1);
 					}
 				}
 			}
@@ -370,6 +395,7 @@ public class AssemblyReader {
 	public static final String STR_JAVA_IDENTIFIER="[a-zA-Z_][a-zA-Z_0-9]*";
 	public static final String STR_JAVA_CLASS="("+STR_JAVA_IDENTIFIER+"(?:\\."+STR_JAVA_IDENTIFIER+")+)";
 	public static final String STR_JAVA_CLASS_INTERNAL="("+STR_JAVA_IDENTIFIER+"(?:[/.]"+STR_JAVA_IDENTIFIER+")+)";
+	public static final String STR_MAX_STACK_OR_LOCALS="^@Max(Stack|Locals)\\s+"+STR_HEX;
 	public static final String STR_EXCEPTION_HANDLER_ALL="^@Exception handler\\s+"+STR_HEX+"\\s*-\\s*"+STR_HEX+"\\s+goto\\s+"+STR_HEX;
 	public static final String STR_EXCEPTION_HANDLER=STR_EXCEPTION_HANDLER_ALL+"\\s*(?:\\s*type\\s+"+STR_JAVA_CLASS_INTERNAL+")?$";
 	public static final String STR_LOOKUPSWITCH=STR_HEX+"\\s*(\\(.*\\))$";
@@ -384,6 +410,7 @@ public class AssemblyReader {
 	public static final Pattern PATTERN_JAVA_IDENTIFIER=Pattern.compile("("+STR_JAVA_IDENTIFIER+")");
 	public static final Pattern PATTERN_JAVA_CLASS=Pattern.compile(STR_JAVA_CLASS);
 	public static final Pattern PATTERN_JAVA_CLASS_INTERNAL=Pattern.compile(STR_JAVA_CLASS_INTERNAL);
+	public static final Pattern PATTERN_MAX_STACK_OR_LOCAL=Pattern.compile(STR_MAX_STACK_OR_LOCALS);
 	public static final Pattern PATTERN_EXCEPTION_HANDLER_ALL=Pattern.compile(STR_EXCEPTION_HANDLER_ALL);
 	public static final Pattern PATTERN_EXCEPTION_HANDLER=Pattern.compile(STR_EXCEPTION_HANDLER);
 	public static final Pattern PATTERN_LOOKUPSWITCH=Pattern.compile(STR_LOOKUPSWITCH);

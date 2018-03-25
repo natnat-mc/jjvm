@@ -99,7 +99,7 @@ public class BytecodeAssembler {
 		int pos=1;
 		int chr=line.charAt(pos);
 		int len=line.length();
-		for(; pos<len&&!(chr=='"'&&!escape); pos++) {
+		for(pos++; pos<len&&!(chr=='"'&&!escape); pos++) {
 			if(chr=='\\') escape=!escape;
 			str.append((char) chr);
 			chr=line.charAt(pos);
@@ -206,6 +206,12 @@ public class BytecodeAssembler {
 	}
 	
 	public static void disassemble(JCode code, ConstantPool pool, PrintStream out, String indent, boolean printPos) {
+		out.print(indent);
+		out.print("@MaxStack 0x");
+		out.println(Integer.toHexString(code.maxStack));
+		out.print(indent);
+		out.print("@MaxLocals 0x");
+		out.println(Integer.toHexString(code.maxLocals));
 		for (JExceptionHandler handler:code.exceptionTable) {
 			out.print(indent);
 			out.print("@Exception handler 0x");
