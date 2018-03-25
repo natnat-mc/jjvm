@@ -8,6 +8,8 @@ import java.nio.file.Files;
 public class TestClassFile implements Runnable {
 	
 	public static void main(String[] args) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+		File outFile=TestHelper.getTestFile("TestClassFile.class");
+		
 		ClassFile cFile=new ClassFile();
 		FileInputStream in=new FileInputStream(new File("bin/jjvm/TestClassFile.class"));
 		DataInputStream din=new DataInputStream(in);
@@ -16,7 +18,7 @@ public class TestClassFile implements Runnable {
 		cFile.dump(System.out);
 		din.close();
 		
-		FileOutputStream out=new FileOutputStream(new File("test/TestClassFile.class"));
+		FileOutputStream out=new FileOutputStream(outFile);
 		DataOutputStream dout=new DataOutputStream(out);
 		new File("test/TestClassFile.class").deleteOnExit();
 		
@@ -24,7 +26,7 @@ public class TestClassFile implements Runnable {
 		dout.close();
 		cFile=new ClassFile();
 		
-		in=new FileInputStream(new File("test/TestClassFile.class"));
+		in=new FileInputStream(outFile);
 		din=new DataInputStream(in);
 		
 		cFile.read(din);
@@ -33,7 +35,7 @@ public class TestClassFile implements Runnable {
 		
 		new ClassLoader(ClassLoader.getSystemClassLoader()) {
 			{
-				byte[] b=Files.readAllBytes(new File("test/TestClassFile.class").toPath());
+				byte[] b=Files.readAllBytes(outFile.toPath());
 				Class<?> c=defineClass("jjvm.TestClassFile", b, 0, b.length);
 				Class<?> m=TestClassFile.class;
 				if(!c.getName().equals(m.getName())) throw new RuntimeException("Wrong name");

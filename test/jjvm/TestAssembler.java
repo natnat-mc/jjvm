@@ -13,8 +13,8 @@ public class TestAssembler {
 	
 	public static void main(String[] args) throws MalformedClassException, IOException, IllegalArgumentException, IllegalAccessException {
 		File inFile=new File("bin/com/github/natnatMc/jjvm/source/BytecodeAssembler.class");
-		File outFile=new File("test/BytecodeAssembler.asm");
-		File outFile2=new File("test/BytecodeAssembler.bin");
+		File outFile=TestHelper.getTestFile("BytecodeAssembler.asm");
+		File outFile2=TestHelper.getTestFile("BytecodeAssembler.bin");
 		File opCodeFile=new File("data/opcodes.txt");
 		
 		DataInputStream din=new DataInputStream(new FileInputStream(inFile));
