@@ -3,8 +3,6 @@ package com.github.natnatMc.jjvm.source;
 import java.io.*;
 import java.nio.*;
 import java.util.*;
-import java.util.regex.Matcher;
-
 import com.github.natnatMc.jjvm.classFile.*;
 import com.github.natnatMc.jjvm.flags.ClassFlags;
 import com.github.natnatMc.jjvm.interpreter.*;

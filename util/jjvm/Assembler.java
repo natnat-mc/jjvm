@@ -1,9 +1,5 @@
 package jjvm;
 
-import java.io.*;
-
-import com.github.natnatMc.jjvm.interpreter.*;
-
 public class Assembler {
 	
 	public static void main(String... args) {

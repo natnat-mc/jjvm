@@ -1,17 +1,10 @@
 package jjvm;
 
 import java.io.*;
-import java.nio.ByteBuffer;
-import java.util.List;
-
 import com.github.natnatMc.jjvm.classFile.*;
 import com.github.natnatMc.jjvm.exceptions.MalformedClassException;
-import com.github.natnatMc.jjvm.flags.ClassFlags;
 import com.github.natnatMc.jjvm.interpreter.*;
 import com.github.natnatMc.jjvm.source.BytecodeAssembler;
-import com.github.natnatMc.jjvm.struct.*;
-import com.github.natnatMc.jjvm.types.JObject;
-import com.github.natnatMc.jjvm.types.JString;
 
 public class Disassembler {
 	
