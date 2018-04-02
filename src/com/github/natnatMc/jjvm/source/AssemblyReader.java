@@ -17,6 +17,8 @@ import com.github.natnatMc.jjvm.types.JString;
 public class AssemblyReader {
 	
 	private BufferedReader reader;
+	private PrintStream status;
+	
 	private JClass generated=new JClass();
 	private ConstantPool pool=new ConstantPool();
 	private ArrayList<JField> fields=new ArrayList<JField>();
@@ -30,6 +32,8 @@ public class AssemblyReader {
 
 	//reads a class from disassembled bytecode
 	public void read(PrintStream status) throws IOException {
+		this.status=status;
+		
 		//class def line
 		readClassLine(reader.readLine());
 		
@@ -158,11 +162,12 @@ public class AssemblyReader {
 			} else {
 				//we're not reading a flag, so it's the type
 				type=mod;
+				break;
 			}
 		}
 		
 		//read name
-		String mod=split[pos++].trim();
+		String mod=split[++pos].trim();
 		if(mod.contains("=")) {
 			//we're reading an equals sign
 			String[] parts=mod.split("=");
@@ -216,8 +221,120 @@ public class AssemblyReader {
 	}
 
 	//reads a method
-	public void readMethod(String line) {
-		//TODO implement me
+	public void readMethod(String line) throws IOException {
+		int flags=0;
+		String name=null;
+		String type=null;
+		
+		//split by whitespace
+		String[] split=line.split("\\s+");
+		
+		boolean pDone=false;
+		int pos=0;
+		ArrayList<String> shards=new ArrayList<String>();
+		ArrayList<String> shards2=new ArrayList<String>();
+		
+		//read all modifiers
+		for(; pos<split.length; pos++) {
+			String mod=split[pos].trim();
+			int flag=ClassFlags.getFlag(mod);
+			
+			if(flag!=0) {
+				//we're really reading a flag, so it's all good
+				flags|=flag;
+			} else {
+				//we're not reading a flag, so it's the type
+				type=mod;
+				break;
+			}
+		}
+		
+		//read name
+		String mod=split[++pos].trim();
+		if(mod.contains("(")) {
+			//we're reading a parenthesis
+			String[] parts=mod.split("\\(");
+			name=parts[0];
+			for(int i=1; i<parts.length; i++) {
+				if(parts[i].equals(")")) {
+					pDone=true;
+				} else if(parts[i].contains(")")) {
+					String[] pts=parts[i].split("\\)");
+					pDone=true;
+					shards.add(pts[0]);
+					if(pts.length!=1) shards2.add(pts[1]);
+				} else {
+					shards.add(parts[i]);
+				}
+			}
+			pos++;
+		} else {
+			name=mod;
+		}
+		
+		if(!pDone) {
+			//read parameters
+			for(; pos<split.length; pos++) {
+				mod=split[pos];
+				if(mod.contains(")")) {
+					String[] parts=mod.split("\\)");
+					shards.add(parts[0]);
+					if(parts.length!=1) shards2.add(parts[1]);
+					pos++;
+					break;
+				} else {
+					shards.add(mod);
+				}
+			}
+		}
+		
+		//read end of line
+		for(; pos<split.length; pos++) {
+			mod=split[pos];
+			shards2.add(mod);
+		}
+		
+		//read params, throws and things like that
+		StringBuilder paramsB=new StringBuilder();
+		StringBuilder eolB=new StringBuilder();
+		for(int i=0; i<shards.size(); i++) {
+			if(i!=0) paramsB.append(' ');
+			paramsB.append(shards.get(i));
+		}
+		for(int i=0; i<shards2.size(); i++) {
+			if(i!=0) eolB.append(' ');
+			eolB.append(shards2.get(i));
+		}
+		String params=paramsB.toString();
+		String eol=eolB.toString();
+		
+		//debug logging, remove it when ok
+		status.println("name is "+name);
+		status.println("params is "+params);
+		status.println("eol is "+eol);
+		
+		//list params
+		List<String> paramList;
+		if(params.length()==0) paramList=Collections.emptyList();
+		else paramList=Arrays.asList(params.split(",\\s*"));
+		
+		//TODO read throws here
+		List<String> exceptionList=new ArrayList<String>();
+		
+		
+		if(eol.endsWith(";")) {
+			//there is no code to be seen here
+			JMethod method=new JMethod();
+			method.setName(name);
+			method.setType(type);
+			method.setFlags(flags);
+			method.setParameters(paramList);
+			methods.add(method);
+		} else {
+			//there is at least some code here
+			JMethod assemble=assembleMethod(flags, name, type, paramList, exceptionList, reader, pool, status);
+			methods.add(assemble);
+		}
 	}
 	
 	//reads a number field
@@ -551,7 +668,11 @@ public class AssemblyReader {
 							//TODO assemble other codes
 							status.println("[UNIMPLEMENTED] "+opCode.getMnemonic());
 					}
-					if(args.length>1) line=line.substring(end+1).trim();
+					if(args.length>1) {
+						System.err.println(end+" "+line);
+						if(line.length()>=end+1) line=line.substring(end+1).trim();
+						else line="";
+					}
 					switch(args[0]) {
 						case 'U':
 							dout.writeByte(id&0xff);
@@ -644,7 +765,7 @@ public class AssemblyReader {
 	public static final String STR_LOOKUPSWITCH=STR_HEX+"\\s*(\\(.*\\))$";
 	public static final String STR_LOOKUPSWITCH_ONE="\\(\\s*"+STR_HEX+"\\s*:\\s*"+STR_HEX+"\\s*\\)";
 	public static final String STR_TABLESWITCH=STR_HEX+"\\s*"+STR_HEX+"\\s*"+STR_HEX+"\\s*(\\(.*\\))$";
-	public static final String STR_FIELDREF=STR_JAVA_CLASS_INTERNAL+"\\s*:\\s*(<?"+STR_JAVA_IDENTIFIER+">?)\\s*:\\s*(.*)$";
+	public static final String STR_FIELDREF=STR_JAVA_CLASS_INTERNAL+"\\s*:\\s*(<?"+STR_JAVA_IDENTIFIER+">?)\\s*:\\s*(\\S*)";
 
 	public static final Pattern PATTERN_HEX_RAW=Pattern.compile(STR_HEX_RAW);
 	public static final Pattern PATTERN_HEX=Pattern.compile(STR_HEX);

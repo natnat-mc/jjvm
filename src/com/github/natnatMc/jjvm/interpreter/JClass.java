@@ -138,7 +138,13 @@ public class JClass {
 			out.print(f.name);
 			if(f.constant!=null) {
 				out.print('=');
-				out.print(f.constant.toString());
+				if(!f.constant.isNumber()) {
+					out.print('"');
+					out.print(f.constant.toString());
+					out.print('"');
+				} else {
+					out.print(f.constant.toString());
+				}
 			}
 			out.println(';');
 		}
