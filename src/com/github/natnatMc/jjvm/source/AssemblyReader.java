@@ -9,38 +9,83 @@ import java.util.regex.Pattern;
 import com.github.natnatMc.jjvm.classFile.*;
 import com.github.natnatMc.jjvm.flags.ClassFlags;
 import com.github.natnatMc.jjvm.interpreter.*;
+import com.github.natnatMc.jjvm.types.JDecimal;
+import com.github.natnatMc.jjvm.types.JInteger;
+import com.github.natnatMc.jjvm.types.JObject;
+import com.github.natnatMc.jjvm.types.JString;
 
 public class AssemblyReader {
 	
 	private BufferedReader reader;
 	private JClass generated=new JClass();
 	private ConstantPool pool=new ConstantPool();
+	private ArrayList<JField> fields=new ArrayList<JField>();
+	private ArrayList<JMethod> methods=new ArrayList<JMethod>();
+	
+	private String name;
 	
 	public AssemblyReader(BufferedReader r) {
 		reader=r;
 	}
 
+	//reads a class from disassembled bytecode
 	public void read(PrintStream status) throws IOException {
 		//class def line
 		readClassLine(reader.readLine());
+		
+		String line;
+		do {
+			line=reader.readLine().trim();
+			if(line==null) break;
+			if(line.isEmpty()) continue;
+			
+			status.println("Reading line: "+line);
+			
+			if(line.contains("\"")) {
+				//we're reading a String field
+				status.println("Reading String field");
+				readStringField(line);
+			} else if(line.contains("(")) {
+				//we're reading a method
+				status.println("Reading method");
+				readMethod(line);
+			} else if(line.contains(";")) {
+				//we're reading a number field
+				status.println("Reading non-String field");
+				readNumberField(line);
+			}
+			
+		} while(!line.trim().equals("}"));
 	}
 	
+	//reads first line of class, containing modifier, superclass and class name
 	private void readClassLine(String cLine) {
+		//split get all parts of the line, delimited by whitespace
 		String[] split=cLine.split("\\s+");
+		
+		//init the method
 		int flags=0;
 		int status=0;
 		ArrayList<String> interfaces=new ArrayList<String>();
+		
+		//iterate through all words
 		for(int i=0; i<split.length; i++) {
 			String part=split[i];
+			
 			if(part.endsWith("{")) {
-				part=part.substring(0, part.length()-2);
+				//we're at the end of the line, and inside the class now
+				part=part.substring(0, part.length()-1).trim();
 				status=10;
 			}
+			
+			//an empty part shouldn't happen, but it _can_ happen in some cases, like the last part
 			if(part.isEmpty()) continue;
+			
 			if(status==0) {
 				//reading all modifiers
 				int val=ClassFlags.getFlag(part);
 				if(part.equals("class")) {
+					//no more modifiers after this point
 					status++;
 					generated.setFlags(flags);
 					if(ClassFlags.isSuper(flags)) generated.setSuper("java.lang.Object");
@@ -50,30 +95,224 @@ public class AssemblyReader {
 			} else if(status==1) {
 				//reading class name
 				generated.setName(part);
+				name=part;
 				status++;
 			} else if(status==2) {
+				//extends or implements
 				if(part.equals("extends")) status=3;
 				else status=4;	//implements
 			} else if(status==3) {
+				//read superclass name
 				generated.setSuper(part);
 				status=2;
 			} else if(status==5) {
+				//read all interfaces
 				if(part.equals(",")) continue;
 				if(part.endsWith(",")) part=part.substring(0, part.length()-2);
 				if(part.startsWith(",")) part=part.substring(1);
 				interfaces.add(part);
 			} else if(status>=10) {
+				//we're done here
 				break;
 			}
 		}
+		//push all interfaces and constant pool
 		generated.setInterfaces(interfaces);
 		generated.setConstantPool(pool);
+		
+		//push name, superclass and interfaces to the pool
+		pool.requireClass(name);
+		if(generated.getSuper()!=null) pool.requireClass(generated.getSuper());
+		for(String name:interfaces) pool.requireClass(name);
 	}
 	
+	//returns the generated JClass
 	public JClass getGeneratedClass() {
+		generated.setFields(fields);
+		generated.setMethods(methods);
 		return generated;
 	}
 	
+	//reads a String field
+	public void readStringField(String line) {
+		int flags=0;
+		String name=null;
+		String type=null;
+		JObject value=null;
+		
+		//split by whitespace
+		String[] split=line.split("\\s+");
+		int pos=0;
+		boolean equal=false;
+		boolean done=false;
+		ArrayList<String> shards=new ArrayList<String>();
+		
+		//read all modifiers
+		for(; pos<split.length; pos++) {
+			String mod=split[pos].trim();
+			int flag=ClassFlags.getFlag(mod);
+			
+			if(flag!=0) {
+				//we're really reading a flag, so it's all good
+				flags|=flag;
+			} else {
+				//we're not reading a flag, so it's the type
+				type=mod;
+			}
+		}
+		
+		//read name
+		String mod=split[pos++].trim();
+		if(mod.contains("=")) {
+			//we're reading an equals sign
+			String[] parts=mod.split("=");
+			name=parts[0];
+			for(int i=1; i<parts.length; i++) shards.add(parts[i]);
+			equal=true;
+		} else if(mod.endsWith(";")) {
+			//we're done after that, no value is given
+			name=mod.replace(";", "");
+			done=true;
+		} else {
+			name=mod;
+		}
+		
+		if(!done) {
+			if(!equal) {
+				//finally read that equal sign
+				String part=split[pos++];
+				if(part.startsWith("=")) shards.add(part.substring(1));
+				else if(part.equals(";")) done=true;
+				equal=true;
+			}
+			
+			//read all remaining parts
+			for(; pos<split.length; pos++) {
+				shards.add(split[pos]);
+			}
+			
+			//concatenate all parts of the string
+			StringBuilder build=new StringBuilder();
+			for(int i=0; i<shards.size(); i++) {
+				if(i!=0) build.append(' ');
+				build.append(shards.get(i));
+			}
+			
+			//read the string
+			StringBuilder valueBuilder=new StringBuilder();
+			BytecodeAssembler.readString(valueBuilder, build.toString());
+			value=new JString(BytecodeAssembler.unescapeJava(valueBuilder.toString()));
+		}
+		
+		//create the field
+		JField field=new JField();
+		field.setFlags(flags);
+		field.setName(name);
+		field.setConstantValue(value);
+		field.setType(type);
+		
+		//apply the field
+		fields.add(field);
+	}
+
+	//reads a method
+	public void readMethod(String line) {
+		//TODO implement me
+	}
+	
+	//reads a number field
+	public void readNumberField(String line) {
+		int flags=0;
+		String name=null;
+		String type=null;
+		JObject value=null;
+		
+		//split by whitespace
+		String[] split=line.split("\\s+");
+		int pos=0;
+		boolean equal=false;
+		boolean done=false;
+		ArrayList<String> shards=new ArrayList<String>();
+		
+		//read all modifiers
+		for(; pos<split.length; pos++) {
+			String mod=split[pos].trim();
+			int flag=ClassFlags.getFlag(mod);
+			
+			if(flag!=0) {
+				//we're really reading a flag, so it's all good
+				flags|=flag;
+			} else {
+				//we're not reading a flag, so it's the type
+				type=mod;
+				break;
+			}
+		}
+		
+		//read name
+		String mod=split[pos++].trim();
+		if(mod.contains("=")) {
+			//we're reading an equals sign
+			String[] parts=mod.split("=");
+			name=parts[0];
+			for(int i=1; i<parts.length; i++) shards.add(parts[i]);
+			equal=true;
+		} else if(mod.endsWith(";")) {
+			//we're done after that, no value is given
+			name=mod.replace(";", "");
+			done=true;
+		} else {
+			name=mod;
+		}
+		
+		if(!done) {
+			if(!equal) {
+				//finally read that equal sign
+				String part=split[pos++];
+				if(part.startsWith("=")) shards.add(part.substring(1));
+				else if(part.equals(";")) done=true;
+				equal=true;
+			}
+			
+			//read all remaining parts
+			for(; pos<split.length; pos++) {
+				shards.add(split[pos]);
+			}
+			
+			//concatenate all parts of the string
+			StringBuilder build=new StringBuilder();
+			for(int i=0; i<shards.size(); i++) {
+				if(i!=0) build.append(' ');
+				build.append(shards.get(i));
+			}
+			
+			Matcher decimal=PATTERN_DECIMAL.matcher(build);
+			if(decimal.matches()) {
+				value=new JDecimal(getDouble(decimal.group(1)));
+			} else {
+				Matcher integer=PATTERN_INTEGER.matcher(build);
+				if(integer.matches()) {
+					value=new JInteger(getLong(decimal.group(1)));
+				}
+			}
+		}
+		
+		//create the field
+		JField field=new JField();
+		field.setFlags(flags);
+		field.setName(name);
+		field.setConstantValue(value);
+		field.setType(type);
+		
+		//apply the field
+		fields.add(field);
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	//assembles a method
 	public static JMethod assembleMethod(
 											int flags,
 											String name,
@@ -371,19 +610,23 @@ public class AssemblyReader {
 		return method;
 	}
 	
+	//reads an int value from hex or decimal
 	public static int getInt(String hexOrDec) {
 		if(hexOrDec.startsWith("0x")) return Integer.parseInt(hexOrDec.substring(2), 16);
 		if(hexOrDec.charAt(0)=='+'||hexOrDec.charAt(0)=='-') return Integer.parseInt(hexOrDec, 10);
 		return Integer.decode(hexOrDec);
 	}
+	//reads a long value from hex or decimal
 	public static long getLong(String hexOrDec) {
 		if(hexOrDec.startsWith("0x")) return Long.parseLong(hexOrDec.substring(2), 16);
 		if(hexOrDec.charAt(0)=='+'||hexOrDec.charAt(0)=='-') return Long.parseLong(hexOrDec, 10);
 		return Long.decode(hexOrDec);
 	}
+	//reads a float value
 	public static float getFloat(String str) {
 		return Float.parseFloat(str);
 	}
+	//reads a double value
 	public static double getDouble(String str) {
 		return Double.parseDouble(str);
 	}

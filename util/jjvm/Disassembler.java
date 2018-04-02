@@ -15,7 +15,7 @@ import com.github.natnatMc.jjvm.types.JString;
 
 public class Disassembler {
 	
-	public static void main(String[] args) throws IOException, MalformedClassException {
+	public static void main(String... args) throws IOException, MalformedClassException {
 		if(args.length<2) {
 			printUsage();
 			System.exit(1);

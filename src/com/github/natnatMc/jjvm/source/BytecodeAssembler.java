@@ -13,6 +13,7 @@ import com.github.natnatMc.jjvm.types.*;
 
 public class BytecodeAssembler {
 	
+	//escape a java String
 	public static String escapeJava(String unescaped) {
 		StringBuilder builder=new StringBuilder();
 		int len=unescaped.length();
@@ -49,6 +50,8 @@ public class BytecodeAssembler {
 		}
 		return builder.toString();
 	}
+	
+	//unescape a previously escaped java String
 	public static String unescapeJava(String escaped) {
 		StringBuilder builder=new StringBuilder();
 		boolean backslash=false;
@@ -94,6 +97,8 @@ public class BytecodeAssembler {
 		}
 		return builder.toString();
 	}
+	
+	//read a java String
 	public static int readString(StringBuilder str, String line) {
 		boolean escape=false;
 		int pos=1;
@@ -107,6 +112,7 @@ public class BytecodeAssembler {
 		return pos;
 	}
 	
+	//disassemble a class
 	public static void disassemble(JClass jClass, PrintStream out, boolean printPos) {
 		ConstantPool pool=jClass.getConstantPool();
 		
@@ -205,6 +211,7 @@ public class BytecodeAssembler {
 				out.println('}');
 	}
 	
+	//disassemble a method
 	public static void disassemble(JCode code, ConstantPool pool, PrintStream out, String indent, boolean printPos) {
 		out.print(indent);
 		out.print("@MaxStack 0x");
@@ -356,6 +363,7 @@ public class BytecodeAssembler {
 		}
 	}
 	
+	//get a value from the constant pool, in textual form
 	private static String getPool(int index, ConstantPool pool) {
 		try {
 			ConstantPoolObject obj=pool.get(index);
@@ -404,6 +412,7 @@ public class BytecodeAssembler {
 		}
 	}
 	
+	//assemble a class
 	public static JClass assemble(BufferedReader in, PrintStream status) throws IOException {
 		AssemblyReader reader=new AssemblyReader(in);
 		reader.read(status);

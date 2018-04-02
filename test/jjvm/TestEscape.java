@@ -24,7 +24,7 @@ public class TestEscape {
 		StringBuilder builder=new StringBuilder();
 		int readString=BytecodeAssembler.readString(builder, '"'+escaped+'"');
 		System.out.println("Read text: "+builder.toString()+" ("+readString+")");
-		return text.equals(unescaped)&&text.equals(builder.toString());
+		return text.equals(unescaped)&&escaped.equals(builder.toString());
 	}
 	
 }

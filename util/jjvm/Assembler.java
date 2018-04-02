@@ -6,7 +6,7 @@ import com.github.natnatMc.jjvm.interpreter.*;
 
 public class Assembler {
 	
-	public static void main(String[] args) {
+	public static void main(String... args) {
 		if(args.length<2) {
 			printUsage();
 			System.exit(1);
