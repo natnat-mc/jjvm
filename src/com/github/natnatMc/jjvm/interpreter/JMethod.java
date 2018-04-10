@@ -111,7 +111,7 @@ public class JMethod {
 		char c=desc.charAt(pos.value++);
 		switch(c) {
 			case 'B':
-				return "boolean";
+				return "byte";
 			case 'C':
 				return "char";
 			case 'D':

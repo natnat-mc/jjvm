@@ -200,26 +200,62 @@ public class ClassFile {
 	public ConstantPool getPool() {
 		return constantPool;
 	}
+	public void setPool(ConstantPool cPool) {
+		this.constantPool=cPool;
+	}
 	public String getName() {
 		return className;
+	}
+	public void setName(String name) {
+		this.className=name;
 	}
 	public String getSuper() {
 		return superName;
 	}
+	public void setSuper(String name) {
+		this.superName=name;
+	}
 	public int getFlags() {
 		return flags;
+	}
+	public void setFlags(int flags) {
+		this.flags=flags;
 	}
 	public String[] getInterfaces() {
 		return interfaces.toArray(new String[0]);
 	}
+	public void setInterfaces(String[] interfaces) {
+		this.interfaces.clear();
+		for(int i=0; i<interfaces.length; i++) {
+			this.interfaces.add(interfaces[i]);
+		}
+	}
 	public ClassField[] getFields() {
 		return fields.toArray(new ClassField[0]);
+	}
+	public void setFields(ClassField[] fields) {
+		this.fields.clear();
+		for(int i=0; i<fields.length; i++) {
+			this.fields.add(fields[i]);
+		}
 	}
 	public ClassMethod[] getMethods() {
 		return methods.toArray(new ClassMethod[0]);
 	}
+	public void setMethods(ClassMethod[] methods) {
+		this.methods.clear();
+		for(int i=0; i<methods.length; i++) {
+			this.methods.add(methods[i]);
+		}
+	}
 	public ClassAttribute[] getAttributes() {
 		return attributes.toArray(new ClassAttribute[0]);
+	}
+	public void setAttributes(ClassAttribute[] attributes) {
+		this.attributes.clear();
+		for(int i=0; i<attributes.length; i++) {
+			this.attributes.add(attributes[i]);
+		}
 	}
 	
 	public void dump(PrintStream out) {

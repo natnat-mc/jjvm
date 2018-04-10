@@ -9,10 +9,6 @@ import java.util.regex.Pattern;
 import com.github.natnatMc.jjvm.classFile.*;
 import com.github.natnatMc.jjvm.flags.ClassFlags;
 import com.github.natnatMc.jjvm.interpreter.*;
-import com.github.natnatMc.jjvm.types.JDecimal;
-import com.github.natnatMc.jjvm.types.JInteger;
-import com.github.natnatMc.jjvm.types.JObject;
-import com.github.natnatMc.jjvm.types.JString;
 
 public class AssemblyReader {
 	
@@ -142,7 +138,7 @@ public class AssemblyReader {
 		int flags=0;
 		String name=null;
 		String type=null;
-		JObject value=null;
+		Object value=null;
 		
 		//split by whitespace
 		String[] split=line.split("\\s+");
@@ -206,7 +202,7 @@ public class AssemblyReader {
 			//read the string
 			StringBuilder valueBuilder=new StringBuilder();
 			BytecodeAssembler.readString(valueBuilder, build.toString());
-			value=new JString(BytecodeAssembler.unescapeJava(valueBuilder.toString()));
+			value=BytecodeAssembler.unescapeJava(valueBuilder.toString());
 		}
 		
 		//create the field
@@ -318,9 +314,15 @@ public class AssemblyReader {
 		if(params.length()==0) paramList=Collections.emptyList();
 		else paramList=Arrays.asList(params.split(",\\s*"));
 		
-		//TODO read throws here
 		List<String> exceptionList=new ArrayList<String>();
-		
+		Matcher throwsMatcher=PATTERN_THROWS.matcher(eol);
+		if(throwsMatcher.find()) {
+			String exceptionListStr=throwsMatcher.group(1);
+			String[] exceptions=exceptionListStr.split(",\\s*");
+			for(int i=0; i<exceptions.length; i++) {
+				exceptionList.add(exceptions[i].trim());
+			}
+		}
 		
 		if(eol.endsWith(";")) {
 			//there is no code to be seen here
@@ -342,7 +344,7 @@ public class AssemblyReader {
 		int flags=0;
 		String name=null;
 		String type=null;
-		JObject value=null;
+		Object value=null;
 		
 		//split by whitespace
 		String[] split=line.split("\\s+");
@@ -365,6 +367,7 @@ public class AssemblyReader {
 				break;
 			}
 		}
+		pos++;
 		
 		//read name
 		String mod=split[pos++].trim();
@@ -377,6 +380,7 @@ public class AssemblyReader {
 		} else if(mod.endsWith(";")) {
 			//we're done after that, no value is given
 			name=mod.replace(";", "");
+			equal=true;
 			done=true;
 		} else {
 			name=mod;
@@ -405,11 +409,11 @@ public class AssemblyReader {
 			
 			Matcher decimal=PATTERN_DECIMAL.matcher(build);
 			if(decimal.matches()) {
-				value=new JDecimal(getDouble(decimal.group(1)));
+				value=getDouble(decimal.group(1));
 			} else {
 				Matcher integer=PATTERN_INTEGER.matcher(build);
 				if(integer.matches()) {
-					value=new JInteger(getLong(decimal.group(1)));
+					value=getLong(decimal.group(1));
 				}
 			}
 		}
@@ -766,6 +770,7 @@ public class AssemblyReader {
 	public static final String STR_LOOKUPSWITCH_ONE="\\(\\s*"+STR_HEX+"\\s*:\\s*"+STR_HEX+"\\s*\\)";
 	public static final String STR_TABLESWITCH=STR_HEX+"\\s*"+STR_HEX+"\\s*"+STR_HEX+"\\s*(\\(.*\\))$";
 	public static final String STR_FIELDREF=STR_JAVA_CLASS_INTERNAL+"\\s*:\\s*(<?"+STR_JAVA_IDENTIFIER+">?)\\s*:\\s*(\\S*)";
+	public static final String STR_THROWS="\\s*throws\\s+([^{;]+)\\s*";
 
 	public static final Pattern PATTERN_HEX_RAW=Pattern.compile(STR_HEX_RAW);
 	public static final Pattern PATTERN_HEX=Pattern.compile(STR_HEX);
@@ -781,5 +786,6 @@ public class AssemblyReader {
 	public static final Pattern PATTERN_LOOKUPSWITCH_ONE=Pattern.compile(STR_LOOKUPSWITCH_ONE);
 	public static final Pattern PATTERN_TABLESWITCH=Pattern.compile(STR_TABLESWITCH);
 	public static final Pattern PATTERN_FIELDREF=Pattern.compile(STR_FIELDREF);
+	public static final Pattern PATTERN_THROWS=Pattern.compile(STR_THROWS);
 	
 }

@@ -7,7 +7,6 @@ import com.github.natnatMc.jjvm.classFile.*;
 import com.github.natnatMc.jjvm.flags.ClassFlags;
 import com.github.natnatMc.jjvm.interpreter.*;
 import com.github.natnatMc.jjvm.struct.*;
-import com.github.natnatMc.jjvm.types.*;
 
 public class BytecodeAssembler {
 	
@@ -148,10 +147,10 @@ public class BytecodeAssembler {
 					out.print(field.getType());
 					out.print(' ');
 					out.print(field.getName());
-					JObject cst=field.getConstantValue();
+					Object cst=field.getConstantValue();
 					if(cst!=null) {
 						out.print('=');
-						if(cst instanceof JString) {
+						if(cst instanceof String) {
 							out.print('"');
 							out.print(cst.toString());
 							out.print('"');
