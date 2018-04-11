@@ -181,11 +181,15 @@ public class JClass {
 		out.println("}");
 	}
 	
-	public ClassFile export() throws IOException {
+	public ClassFile export() throws IOException, MalformedClassException {
 		//create class and give it basic attributes
 		ClassFile cFile=new ClassFile();
-		cFile.setName(getName());
-		cFile.setSuper(getSuper());
+		cFile.setName(name.replace('.', '/'));
+		cFile.setSuper(superName.replace('.', '/'));
+		String[] interfaces=new String[this.interfaces.length];
+		for(int i=0; i<interfaces.length; i++) {
+			interfaces[i]=this.interfaces[i].replace('.', '/');
+		}
 		cFile.setInterfaces(interfaces);
 		cFile.setPool(pool.clone());
 		
@@ -197,13 +201,13 @@ public class JClass {
 			
 			//create method descriptor
 			StringBuilder descriptor=new StringBuilder();
-			writeDescriptor(descriptor, method.returnType);
 			descriptor.append('(');
 			String[] params=method.parameterTypes;
 			for(int j=0; j<params.length; j++) {
-				writeDescriptor(descriptor, params[i]);
+				writeDescriptor(descriptor, params[j]);
 			}
 			descriptor.append(')');
+			writeDescriptor(descriptor, method.returnType);
 			cMethod.descriptor=descriptor.toString();
 			
 			//set method flags
@@ -236,17 +240,82 @@ public class JClass {
 			if(method.code!=null) {
 				ClassAttribute code=new ClassAttribute();
 				code.name="Code";
-				//TODO continue this
+				JCode jCode=method.code;
+				ByteArrayOutputStream baos=new ByteArrayOutputStream();
+				DataOutputStream dos=new DataOutputStream(baos);
+				dos.writeChar(jCode.maxStack);
+				dos.writeChar(jCode.maxLocals);
+				dos.writeChar(jCode.codeLen);
+				dos.write(jCode.code.array());
+				dos.writeChar(jCode.exceptionTableLen);
+				for(int j=0; j<jCode.exceptionTableLen; j++) {
+					JExceptionHandler handler=jCode.exceptionTable[j];
+					dos.writeChar(handler.startPC);
+					dos.writeChar(handler.endPC);
+					dos.writeChar(handler.handlerPC);
+				}
+				dos.close();
+				code.data=ByteBuffer.wrap(baos.toByteArray());
+				code.len=code.data.capacity();
+				attr.add(code);
+			}
+			
+			//add attributes now
+			cMethod.attributes=attr;
+			
+			//add the method
+			methods.add(cMethod);
+		}
+		cFile.setMethods(methods.toArray(new ClassMethod[0]));
+		
+		//generate low-level fields from JField instances
+		ArrayList<ClassField> fields=new ArrayList<ClassField>();
+		for(int i=0; i<this.fields.length; i++) {
+			JField field=this.fields[i];
+			ClassField cField=new ClassField();
+			cField.flags=field.flags;
+			StringBuilder descriptor=new StringBuilder();
+			writeDescriptor(descriptor, field.type);
+			cField.descriptor=descriptor.toString();
+			cField.name=field.name;
+			if(field.constant!=null) {
+				int cVal;
+				if(field.constant instanceof String) {
+					cVal=pool.requireString((String) field.constant);
+				} else if(field.constant instanceof Integer) {
+					cVal=pool.requireInt((Integer) field.constant);
+				} else if(field.constant instanceof Double) {
+					cVal=pool.requireDouble((Double) field.constant);
+				} else if(field.constant instanceof Long) {
+					cVal=pool.requireLong((Long) field.constant);
+				} else if(field.constant instanceof Float) {
+					cVal=pool.requireFloat((Float) field.constant);
+				} else {
+					throw new MalformedClassException("Inconsistent type for constant value");
+				}
+				ClassAttribute constantValue=new ClassAttribute();
+				constantValue.name="ConstantValue";
+				constantValue.len=2;
+				constantValue.data=ByteBuffer.allocate(2);
+				constantValue.data.putChar((char) cVal);
+				cField.attributes.add(constantValue);
 			}
 		}
+		cFile.setFields(fields.toArray(new ClassField[0]));
 		
-		//TODO add fields
-		//TODO add the rest
+		//set class version for generated class
+		cFile.setMajor(52);
+		cFile.setMinor(0);
 		
+		//return generated low-level class
 		return cFile;
 	}
 	
 	public static void writeDescriptor(StringBuilder descriptor, String type) {
+		while(type.endsWith("[]")) {
+			descriptor.append('[');
+			type=type.substring(0, type.length()-2);
+		}
 		switch(type) {
 			case "void":
 				descriptor.append('V');

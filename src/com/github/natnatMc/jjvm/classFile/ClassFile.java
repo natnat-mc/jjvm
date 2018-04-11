@@ -111,8 +111,8 @@ public class ClassFile {
 	
 	public void export(DataOutputStream out) throws IOException {
 		//push everything to the pool
-		constantPool.requireClass(className);
-		if(superName!=null) constantPool.requireClass(superName);
+		int cNameP=constantPool.requireClass(className);
+		int sNameP=superName!=null?constantPool.requireClass(superName):0;
 		for(String i:interfaces) {
 			constantPool.requireClass(i);
 		}
@@ -148,11 +148,10 @@ public class ClassFile {
 		out.writeChar(flags);
 		
 		//class name
-		out.writeChar(constantPool.requireClass(className));
+		out.writeChar(cNameP);
 		
 		//superclass name
-		if(superName!=null) out.writeChar(constantPool.requireClass(superName));
-		else out.writeChar(0);
+		out.writeChar(sNameP);
 		
 		//interfaces
 		out.writeChar(interfaces.size());
@@ -256,6 +255,18 @@ public class ClassFile {
 		for(int i=0; i<attributes.length; i++) {
 			this.attributes.add(attributes[i]);
 		}
+	}
+	public int getMinor() {
+		return minor;
+	}
+	public void setMinor(int min) {
+		minor=min;
+	}
+	public int getMajor() {
+		return major;
+	}
+	public void setMajor(int maj) {
+		major=maj;
 	}
 	
 	public void dump(PrintStream out) {

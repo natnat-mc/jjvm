@@ -116,6 +116,9 @@ public class ConstantPool {
 	}
 	public void read(DataInputStream in) throws IOException {
 		int no=in.readUnsignedShort();
+		//FIXME figure out the real reason why this reads a number which is too big
+		//FIXME it can't read double or long values
+		//FIXME it can't read UTF8 in some cases and stops before the end of the string
 		for(int i=0; i<no-1; i++) {
 			int type=in.readUnsignedByte();
 			ConstantPoolObject obj=ConstantPoolObject.get(type);

@@ -120,10 +120,8 @@ public class AssemblyReader {
 		generated.setInterfaces(interfaces);
 		generated.setConstantPool(pool);
 		
-		//push name, superclass and interfaces to the pool
-		pool.requireClass(name);
-		if(generated.getSuper()!=null) pool.requireClass(generated.getSuper());
-		for(String name:interfaces) pool.requireClass(name);
+		//push the flags we just read
+		generated.setFlags(flags);
 	}
 	
 	//returns the generated JClass
