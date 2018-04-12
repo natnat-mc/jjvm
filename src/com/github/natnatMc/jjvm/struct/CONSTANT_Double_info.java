@@ -25,7 +25,6 @@ public class CONSTANT_Double_info extends ConstantPoolObject {
 	public void export(DataOutputStream out) throws IOException {
 		out.writeByte(type);
 		out.writeDouble(bytes);
-		new CONSTANT_Integer_info().export(out);
 	}
 	
 	@Override

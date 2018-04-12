@@ -61,12 +61,16 @@ public class ConstantPool {
 	public int requireDouble(double val) {
 		CONSTANT_Double_info info=new CONSTANT_Double_info();
 		info.bytes=val;
-		return require(info);
+		int pos=require(info);
+		put(new CONSTANT_Integer_info());
+		return pos;
 	}
 	public int requireLong(long val) {
 		CONSTANT_Long_info info=new CONSTANT_Long_info();
 		info.bytes=val;
-		return require(info);
+		int pos=require(info);
+		put(new CONSTANT_Integer_info());
+		return pos;
 	}
 	
 	public int requireNameAndType(String name, String type) {
@@ -124,6 +128,16 @@ public class ConstantPool {
 			ConstantPoolObject obj=ConstantPoolObject.get(type);
 			obj.read(in);
 			put(obj);
+		}
+		//XXX this is just for testing
+		try {
+			this.dump(System.err);
+		} catch(IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch(IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	

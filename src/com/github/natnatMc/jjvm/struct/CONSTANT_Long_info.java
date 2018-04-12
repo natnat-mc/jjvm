@@ -23,7 +23,6 @@ public class CONSTANT_Long_info extends ConstantPoolObject {
 	public void export(DataOutputStream out) throws IOException {
 		out.writeByte(type);
 		out.writeLong(bytes);
-		new CONSTANT_Integer_info().export(out);
 	}
 	
 	@Override
