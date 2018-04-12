@@ -12,6 +12,7 @@ import com.github.natnatMc.jjvm.struct.CONSTANT_Integer_info;
 import com.github.natnatMc.jjvm.struct.CONSTANT_InterfaceMethodref_info;
 import com.github.natnatMc.jjvm.struct.CONSTANT_Long_info;
 import com.github.natnatMc.jjvm.struct.CONSTANT_Methodref_info;
+import com.github.natnatMc.jjvm.struct.CONSTANT_NULL;
 import com.github.natnatMc.jjvm.struct.CONSTANT_NameAndType_info;
 import com.github.natnatMc.jjvm.struct.CONSTANT_String_info;
 import com.github.natnatMc.jjvm.struct.CONSTANT_Utf8_info;
@@ -24,7 +25,11 @@ public class ConstantPool {
 		int index=objects.indexOf(obj);
 		if(index!=-1) return index+1;
 		objects.add(obj);
-		return objects.size();
+		index=objects.size();
+		if(obj.type==5||obj.type==6) {
+			objects.add(new CONSTANT_NULL());	//Double and Long require a null
+		}
+		return index;
 	}
 	private void put(ConstantPoolObject obj) {
 		objects.add(obj);
@@ -61,16 +66,12 @@ public class ConstantPool {
 	public int requireDouble(double val) {
 		CONSTANT_Double_info info=new CONSTANT_Double_info();
 		info.bytes=val;
-		int pos=require(info);
-		put(new CONSTANT_Integer_info());
-		return pos;
+		return require(info);
 	}
 	public int requireLong(long val) {
 		CONSTANT_Long_info info=new CONSTANT_Long_info();
 		info.bytes=val;
-		int pos=require(info);
-		put(new CONSTANT_Integer_info());
-		return pos;
+		return require(info);
 	}
 	
 	public int requireNameAndType(String name, String type) {
@@ -114,30 +115,22 @@ public class ConstantPool {
 	public void export(DataOutputStream out) throws IOException {
 		out.writeChar(objects.size()+1);
 		for(ConstantPoolObject o:objects) {
+			if(o instanceof CONSTANT_NULL) continue;
 			o.export(out);
 		}
 		out.flush();
 	}
 	public void read(DataInputStream in) throws IOException {
 		int no=in.readUnsignedShort();
-		//FIXME figure out the real reason why this reads a number which is too big
-		//FIXME it can't read double or long values
-		//FIXME it can't read UTF8 in some cases and stops before the end of the string
 		for(int i=0; i<no-1; i++) {
 			int type=in.readUnsignedByte();
 			ConstantPoolObject obj=ConstantPoolObject.get(type);
 			obj.read(in);
 			put(obj);
-		}
-		//XXX this is just for testing
-		try {
-			this.dump(System.err);
-		} catch(IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch(IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			if(type==5||type==6) {
+				put(new CONSTANT_NULL());	//Double and Long require a null afterwards
+				i++;
+			}
 		}
 	}
 	
