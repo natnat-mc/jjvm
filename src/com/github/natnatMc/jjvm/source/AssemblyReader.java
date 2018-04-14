@@ -41,18 +41,13 @@ public class AssemblyReader {
 			
 			status.println("Reading line: "+line);
 			
-			if(line.contains("\"")) {
-				//we're reading a String field
-				status.println("Reading String field");
-				readStringField(line);
-			} else if(line.contains("(")) {
+			if(line.contains("(")) {
 				//we're reading a method
 				status.println("Reading method");
 				readMethod(line);
 			} else if(line.contains(";")) {
-				//we're reading a number field
-				status.println("Reading non-String field");
-				readNumberField(line);
+				//we're reading a field
+				readField(line);
 			}
 			
 		} while(!line.trim().equals("}"));
@@ -105,7 +100,7 @@ public class AssemblyReader {
 				//read superclass name
 				generated.setSuper(part);
 				status=2;
-			} else if(status==5) {
+			} else if(status==4) {
 				//read all interfaces
 				if(part.equals(",")) continue;
 				if(part.endsWith(",")) part=part.substring(0, part.length()-2);
@@ -131,91 +126,8 @@ public class AssemblyReader {
 		return generated;
 	}
 	
-	//reads a String field
-	public void readStringField(String line) {
-		int flags=0;
-		String name=null;
-		String type=null;
-		Object value=null;
-		
-		//split by whitespace
-		String[] split=line.split("\\s+");
-		int pos=0;
-		boolean equal=false;
-		boolean done=false;
-		ArrayList<String> shards=new ArrayList<String>();
-		
-		//read all modifiers
-		for(; pos<split.length; pos++) {
-			String mod=split[pos].trim();
-			int flag=ClassFlags.getFlag(mod);
-			
-			if(flag!=0) {
-				//we're really reading a flag, so it's all good
-				flags|=flag;
-			} else {
-				//we're not reading a flag, so it's the type
-				type=mod;
-				break;
-			}
-		}
-		
-		//read name
-		String mod=split[++pos].trim();
-		if(mod.contains("=")) {
-			//we're reading an equals sign
-			String[] parts=mod.split("=");
-			name=parts[0];
-			for(int i=1; i<parts.length; i++) shards.add(parts[i]);
-			equal=true;
-		} else if(mod.endsWith(";")) {
-			//we're done after that, no value is given
-			name=mod.replace(";", "");
-			done=true;
-		} else {
-			name=mod;
-		}
-		
-		if(!done) {
-			if(!equal) {
-				//finally read that equal sign
-				String part=split[pos++];
-				if(part.startsWith("=")) shards.add(part.substring(1));
-				else if(part.equals(";")) done=true;
-				equal=true;
-			}
-			
-			//read all remaining parts
-			for(; pos<split.length; pos++) {
-				shards.add(split[pos]);
-			}
-			
-			//concatenate all parts of the string
-			StringBuilder build=new StringBuilder();
-			for(int i=0; i<shards.size(); i++) {
-				if(i!=0) build.append(' ');
-				build.append(shards.get(i));
-			}
-			
-			//read the string
-			StringBuilder valueBuilder=new StringBuilder();
-			BytecodeAssembler.readString(valueBuilder, build.toString());
-			value=BytecodeAssembler.unescapeJava(valueBuilder.toString());
-		}
-		
-		//create the field
-		JField field=new JField();
-		field.setFlags(flags);
-		field.setName(name);
-		field.setConstantValue(value);
-		field.setType(type);
-		
-		//apply the field
-		fields.add(field);
-	}
-
 	//reads a method
-	public void readMethod(String line) throws IOException {
+	private void readMethod(String line) throws IOException {
 		int flags=0;
 		String name=null;
 		String type=null;
@@ -337,93 +249,92 @@ public class AssemblyReader {
 		}
 	}
 	
-	//reads a number field
-	public void readNumberField(String line) {
+	//reads a field
+	private void readField(String line) {
+		//strip the semicolon
+		if(line.endsWith(";")) line=line.substring(0, line.length()-1);
+		
+		//split part in readable parts
+		ArrayList<String> splits=new ArrayList<String>();
+		{
+			String[] split=line.split("\\s+");
+			for(int i=0; i<split.length; i++) splits.add(split[i]);
+		}
+		
+		//we initialize the reading
+		int status=0;
 		int flags=0;
-		String name=null;
-		String type=null;
-		Object value=null;
+		String type="";
+		String name="";
+		Object defValue=null;
 		
-		//split by whitespace
-		String[] split=line.split("\\s+");
-		int pos=0;
-		boolean equal=false;
-		boolean done=false;
-		ArrayList<String> shards=new ArrayList<String>();
-		
-		//read all modifiers
-		for(; pos<split.length; pos++) {
-			String mod=split[pos].trim();
-			int flag=ClassFlags.getFlag(mod);
-			
-			if(flag!=0) {
-				//we're really reading a flag, so it's all good
-				flags|=flag;
-			} else {
-				//we're not reading a flag, so it's the type
-				type=mod;
-				break;
-			}
-		}
-		pos++;
-		
-		//read name
-		String mod=split[pos++].trim();
-		if(mod.contains("=")) {
-			//we're reading an equals sign
-			String[] parts=mod.split("=");
-			name=parts[0];
-			for(int i=1; i<parts.length; i++) shards.add(parts[i]);
-			equal=true;
-		} else if(mod.endsWith(";")) {
-			//we're done after that, no value is given
-			name=mod.replace(";", "");
-			equal=true;
-			done=true;
-		} else {
-			name=mod;
-		}
-		
-		if(!done) {
-			if(!equal) {
-				//finally read that equal sign
-				String part=split[pos++];
-				if(part.startsWith("=")) shards.add(part.substring(1));
-				else if(part.equals(";")) done=true;
-				equal=true;
-			}
-			
-			//read all remaining parts
-			for(; pos<split.length; pos++) {
-				shards.add(split[pos]);
-			}
-			
-			//concatenate all parts of the string
-			StringBuilder build=new StringBuilder();
-			for(int i=0; i<shards.size(); i++) {
-				if(i!=0) build.append(' ');
-				build.append(shards.get(i));
-			}
-			
-			Matcher decimal=PATTERN_DECIMAL.matcher(build);
-			if(decimal.matches()) {
-				value=getDouble(decimal.group(1));
-			} else {
-				Matcher integer=PATTERN_INTEGER.matcher(build);
-				if(integer.matches()) {
-					value=getLong(decimal.group(1));
+		while(!splits.isEmpty()) {
+			String part=splits.remove(0);
+			if(status==0) {
+				//reading modifiers
+				int flag=ClassFlags.getFlag(part);
+				if(flag!=0) {
+					flags|=flag;
+				} else {
+					//we've got the type instead
+					status++;
+					type=part;
+				}
+			} else if(status==1) {
+				//reading name and optionally value
+				String[] split=part.split("=", 2);
+				if(split.length==2) splits.add(0, split[1]);
+				name=split[0];
+				status++;
+			} else if(status==2) {
+				//reading value if present
+				if(part.startsWith("=")) part=part.substring(1);
+				if(!part.isEmpty()) {
+					if(part.startsWith("\"")) {
+						//we have a string
+						while(!splits.isEmpty()) part+=" "+splits.remove(0);
+						
+						//decode the string
+						StringBuilder valueBuilder=new StringBuilder();
+						BytecodeAssembler.readString(valueBuilder, part);
+						defValue=BytecodeAssembler.unescapeJava(valueBuilder.toString());
+					} else {
+						Matcher decimal=PATTERN_DECIMAL.matcher(part);
+						if(decimal.find()) {
+							//decimal value, double or float
+							if(decimal.group(2)==null) {
+								//double
+								defValue=getDouble(decimal.group(1));
+							} else {
+								//float
+								defValue=getFloat(decimal.group(1));
+							}
+						} else {
+							Matcher integral=PATTERN_INTEGER.matcher(part);
+							if(integral.find()) {
+								//integral value, int or long
+								if(integral.group(2)==null) {
+									//int
+									defValue=getInt(decimal.group(1));
+								} else {
+									//long
+									defValue=getLong(decimal.group(1));
+								}
+							} else {
+								//not a default value
+							}
+						}
+					}
 				}
 			}
 		}
 		
-		//create the field
+		//actually return a field
 		JField field=new JField();
 		field.setFlags(flags);
 		field.setName(name);
-		field.setConstantValue(value);
 		field.setType(type);
-		
-		//apply the field
+		field.setConstantValue(defValue);
 		fields.add(field);
 	}
 	
@@ -607,24 +518,24 @@ public class AssemblyReader {
 								status.println("\t\""+str.toString()+"\"");
 							} else {
 								//it's a number
-								Matcher matcher=PATTERN_INTEGER.matcher(line);
+								Matcher matcher=PATTERN_DECIMAL.matcher(line);
 								if(matcher.find()) {
-									//it's a long or int
-									status.println("\tan integer");
-									if(matcher.groupCount()==2) {
-										id=pool.requireLong(getLong(matcher.group(1)));
-									} else {
-										id=pool.requireInt(getInt(matcher.group(1)));
-									}
-								} else {
 									//it's a double or float
 									status.println("\ta decimal");
-									matcher=PATTERN_DECIMAL.matcher(line);
-									matcher.find();
-									if(matcher.groupCount()==2) {
+									if(matcher.groupCount()==2&&matcher.group(2)!=null) {
 										id=pool.requireFloat(getFloat(matcher.group(1)));
 									} else {
 										id=pool.requireDouble(getDouble(matcher.group(1)));
+									}
+								} else {
+									//it's a long or int
+									status.println("\tan integer");
+									matcher=PATTERN_INTEGER.matcher(line);
+									matcher.find();
+									if(matcher.groupCount()==2&&matcher.group(2)!=null) {
+										id=pool.requireLong(getLong(matcher.group(1)));
+									} else {
+										id=pool.requireInt(getInt(matcher.group(1)));
 									}
 								}
 								end=matcher.end();

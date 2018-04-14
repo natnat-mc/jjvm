@@ -46,7 +46,7 @@ public class JField {
 					CONSTANT_Utf8_info utf8=(CONSTANT_Utf8_info) pool.get(pos);
 					constant=utf8.value;
 				} else {
-					throw new MalformedClassException("illegal constant type");
+					throw new MalformedClassException("illegal constant type "+obj.type);
 				}
 			}
 		}

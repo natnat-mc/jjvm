@@ -149,6 +149,8 @@ public class JClass {
 					out.print('"');
 				} else {
 					out.print(f.constant.toString());
+					if(f.constant instanceof Float) out.print('f');
+					else if(f.constant instanceof Long) out.print('L');
 				}
 			}
 			out.println(';');
@@ -186,12 +188,12 @@ public class JClass {
 		ClassFile cFile=new ClassFile();
 		cFile.setName(name.replace('.', '/'));
 		cFile.setSuper(superName.replace('.', '/'));
+		cFile.setFlags(flags);
 		String[] interfaces=new String[this.interfaces.length];
 		for(int i=0; i<interfaces.length; i++) {
 			interfaces[i]=this.interfaces[i].replace('.', '/');
 		}
 		cFile.setInterfaces(interfaces);
-		cFile.setPool(pool.clone());
 		
 		//generate low-level methods from JMethod instances
 		ArrayList<ClassMethod> methods=new ArrayList<ClassMethod>();
@@ -245,7 +247,7 @@ public class JClass {
 				DataOutputStream dos=new DataOutputStream(baos);
 				dos.writeChar(jCode.maxStack);
 				dos.writeChar(jCode.maxLocals);
-				dos.writeChar(jCode.codeLen);
+				dos.writeInt(jCode.code.capacity());
 				dos.write(jCode.code.array());
 				dos.writeChar(jCode.exceptionTableLen);
 				for(int j=0; j<jCode.exceptionTableLen; j++) {
@@ -254,6 +256,7 @@ public class JClass {
 					dos.writeChar(handler.endPC);
 					dos.writeChar(handler.handlerPC);
 				}
+				dos.writeChar(0);	//no attributes
 				dos.close();
 				code.data=ByteBuffer.wrap(baos.toByteArray());
 				code.len=code.data.capacity();
@@ -300,12 +303,16 @@ public class JClass {
 				constantValue.data.putChar((char) cVal);
 				cField.attributes.add(constantValue);
 			}
+			fields.add(cField);
 		}
 		cFile.setFields(fields.toArray(new ClassField[0]));
 		
 		//set class version for generated class
-		cFile.setMajor(52);
+		cFile.setMajor(52);	//Java 8
 		cFile.setMinor(0);
+		
+		//push constant pool
+		cFile.setPool(pool.clone());
 		
 		//return generated low-level class
 		return cFile;

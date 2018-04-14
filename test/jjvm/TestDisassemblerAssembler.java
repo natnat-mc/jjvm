@@ -2,8 +2,6 @@ package jjvm;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
 
 import com.github.natnatMc.jjvm.exceptions.MalformedClassException;
 
@@ -17,12 +15,6 @@ public class TestDisassemblerAssembler {
 		
 		Disassembler.main("bin/jjvm/SampleClass.class", asm1.getAbsolutePath(), "data/opcodes.txt");
 		Assembler.main(asm1.getAbsolutePath(), class1.getAbsolutePath(), "data/opcodes.txt");
-		
-		URLClassLoader loader=new URLClassLoader(new URL[] {class1.getParentFile().toURI().toURL()});
-		Class<?> clazz=loader.loadClass("jjvm.SampleClass");
-		Runnable instance=(Runnable) clazz.newInstance();
-		instance.run();
-		loader.close();
 		
 		Disassembler.main(class1.getAbsolutePath(), asm2.getAbsolutePath(), "data/opcodes.txt");
 	}

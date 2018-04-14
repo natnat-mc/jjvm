@@ -156,6 +156,8 @@ public class BytecodeAssembler {
 							out.print('"');
 						} else {
 							out.print(cst.toString());
+							if(cst instanceof Float) out.print('f');
+							else if(cst instanceof Long) out.print('L');
 						}
 					}
 					out.println(";");

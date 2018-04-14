@@ -35,6 +35,8 @@ public class Assembler {
 		JClass jClass=BytecodeAssembler.assemble(read, System.out);
 		read.close();
 		
+		jClass.dump(System.out);
+		
 		ClassFile cFile=jClass.export();
 		
 		DataOutputStream dos=new DataOutputStream(new FileOutputStream(outFile));
