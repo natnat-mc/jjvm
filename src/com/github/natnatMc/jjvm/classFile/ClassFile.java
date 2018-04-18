@@ -2,9 +2,9 @@ package com.github.natnatMc.jjvm.classFile;
 
 import java.util.*;
 
-import com.github.natnatMc.jjvm.flags.ClassFlags;
 import com.github.natnatMc.jjvm.struct.CONSTANT_Class_info;
 import com.github.natnatMc.jjvm.struct.CONSTANT_Utf8_info;
+import com.github.natnatMc.jjvm.struct.ClassFlags;
 
 import java.io.*;
 

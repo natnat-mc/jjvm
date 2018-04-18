@@ -4,7 +4,6 @@ import java.io.*;
 import java.nio.*;
 import java.util.*;
 import com.github.natnatMc.jjvm.classFile.*;
-import com.github.natnatMc.jjvm.flags.ClassFlags;
 import com.github.natnatMc.jjvm.interpreter.*;
 import com.github.natnatMc.jjvm.struct.*;
 

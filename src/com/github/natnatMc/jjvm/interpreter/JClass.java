@@ -12,7 +12,7 @@ import java.util.List;
 
 import com.github.natnatMc.jjvm.classFile.*;
 import com.github.natnatMc.jjvm.exceptions.MalformedClassException;
-import com.github.natnatMc.jjvm.flags.ClassFlags;
+import com.github.natnatMc.jjvm.struct.ClassFlags;
 
 public class JClass {
 	protected ConstantPool pool;

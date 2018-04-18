@@ -1,4 +1,4 @@
-package com.github.natnatMc.jjvm.flags;
+package com.github.natnatMc.jjvm.struct;
 
 import java.util.*;
 

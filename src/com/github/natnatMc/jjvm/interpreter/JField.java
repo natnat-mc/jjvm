@@ -11,7 +11,7 @@ import com.github.natnatMc.jjvm.struct.CONSTANT_Integer_info;
 import com.github.natnatMc.jjvm.struct.CONSTANT_Long_info;
 import com.github.natnatMc.jjvm.struct.CONSTANT_String_info;
 import com.github.natnatMc.jjvm.struct.CONSTANT_Utf8_info;
-import com.github.natnatMc.jjvm.types.IntHolder;
+import com.github.natnatMc.jjvm.struct.IntHolder;
 
 public class JField {
 	

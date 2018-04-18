@@ -8,7 +8,7 @@ import com.github.natnatMc.jjvm.classFile.ConstantPool;
 import com.github.natnatMc.jjvm.exceptions.MalformedClassException;
 import com.github.natnatMc.jjvm.struct.CONSTANT_Class_info;
 import com.github.natnatMc.jjvm.struct.CONSTANT_Utf8_info;
-import com.github.natnatMc.jjvm.types.IntHolder;
+import com.github.natnatMc.jjvm.struct.IntHolder;
 
 public class JMethod {
 	
