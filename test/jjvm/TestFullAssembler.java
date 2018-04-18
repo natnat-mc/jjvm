@@ -3,7 +3,7 @@ package jjvm;
 import java.io.*;
 
 import com.github.natnatMc.jjvm.exceptions.MalformedClassException;
-import com.github.natnatMc.jjvm.interpreter.JClass;
+import com.github.natnatMc.jjvm.intermediate.JClass;
 import com.github.natnatMc.jjvm.source.BytecodeAssembler;
 
 public class TestFullAssembler {

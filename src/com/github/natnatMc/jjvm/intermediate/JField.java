@@ -1,4 +1,4 @@
-package com.github.natnatMc.jjvm.interpreter;
+package com.github.natnatMc.jjvm.intermediate;
 
 import com.github.natnatMc.jjvm.classFile.ClassAttribute;
 import com.github.natnatMc.jjvm.classFile.ClassField;

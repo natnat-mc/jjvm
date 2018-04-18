@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.github.natnatMc.jjvm.classFile.*;
-import com.github.natnatMc.jjvm.interpreter.*;
+import com.github.natnatMc.jjvm.intermediate.*;
 import com.github.natnatMc.jjvm.struct.ClassFlags;
 
 public class AssemblyReader {

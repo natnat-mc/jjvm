@@ -1,4 +1,4 @@
-package com.github.natnatMc.jjvm.interpreter;
+package com.github.natnatMc.jjvm.intermediate;
 
 public class JExceptionHandler {
 	

@@ -6,7 +6,7 @@ import java.util.Collections;
 
 import com.github.natnatMc.jjvm.classFile.*;
 import com.github.natnatMc.jjvm.exceptions.MalformedClassException;
-import com.github.natnatMc.jjvm.interpreter.*;
+import com.github.natnatMc.jjvm.intermediate.*;
 import com.github.natnatMc.jjvm.source.*;
 
 public class TestAssembler {

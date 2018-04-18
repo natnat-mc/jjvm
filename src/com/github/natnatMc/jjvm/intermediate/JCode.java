@@ -1,4 +1,4 @@
-package com.github.natnatMc.jjvm.interpreter;
+package com.github.natnatMc.jjvm.intermediate;
 
 import java.nio.*;
 import com.github.natnatMc.jjvm.classFile.*;
