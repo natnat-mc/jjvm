@@ -104,8 +104,8 @@ public class OpCodes {
 	public static final int goto_w=			0xc8;	//jump somewhere, 32bit index
 	
 	//int handling
-	public static final int i2b=			0x91;	//convert int to int
-	public static final int i2c=			0x92;	//convert char to int
+	public static final int i2b=			0x91;	//convert int to byte
+	public static final int i2c=			0x92;	//convert int to char
 	public static final int i2d=			0x87;	//convert int to double
 	public static final int i2f=			0x86;	//convert int to float
 	public static final int i2l=			0x85;	//convert int to long
