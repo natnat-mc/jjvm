@@ -1,7 +1,7 @@
 package com.github.natnatMc.jjvm.exceptions;
 
 @SuppressWarnings("serial")
-public class MalformedClassException extends Exception {
+public class MalformedClassException extends JJVMException {
 
 	public MalformedClassException(String a) {
 		super(a);
