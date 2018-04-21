@@ -25,6 +25,12 @@ public class JavaClass {
 	public boolean isPrimitive() {
 		return false;
 	}
+	public boolean isArray() {
+		return false;
+	}
+	public boolean isDoubleOrLong() {
+		return false;
+	}
 	
 	//check if we can assign obj to a field of this type
 	public void checkCast(JavaObject obj) throws JJVMCastException {
@@ -98,32 +104,32 @@ public class JavaClass {
 		return this.staticFields.get(name);
 	}
 	//write a static field
-		public void setField(String name, JavaObject value, JavaContext context) throws JJVMException {
-			if(name==null||context==null||value==null) throw new NullPointerException("All arguments must be supplied");
-			
-			//make sure we can cast the value
-			JavaClass type=this.fieldTypes.get(name);
-			if(type==null) throw new JJVMNoSuchFieldException("No such field named "+name+" in class "+this.name);
-			type.checkCast(value);
-			
-			//make sure we're allowed to access the field
-			int mod=this.fieldModifiers.get(name);
-			context.checkAccess(this, mod);
-			
-			//remove last value for property and decrement its number of active references
-			JavaObject lastValue=this.staticFields.get(name);
-			if(lastValue.writeLock!=null) {
-				lastValue.writeLock.lock();
-				if(lastValue.references>0) lastValue.references--;
-				lastValue.writeLock.unlock();
-			}
-			
-			//set value and increment its number of active references
-			this.staticFields.put(name, value);
-			if(value.writeLock!=null) {
-				value.writeLock.lock();
-				value.references++;
-				value.writeLock.unlock();
-			}
+	public void setField(String name, JavaObject value, JavaContext context) throws JJVMException {
+		if(name==null||context==null||value==null) throw new NullPointerException("All arguments must be supplied");
+		
+		//make sure we can cast the value
+		JavaClass type=this.fieldTypes.get(name);
+		if(type==null) throw new JJVMNoSuchFieldException("No such field named "+name+" in class "+this.name);
+		type.checkCast(value);
+		
+		//make sure we're allowed to access the field
+		int mod=this.fieldModifiers.get(name);
+		context.checkAccess(this, mod);
+		
+		//remove last value for property and decrement its number of active references
+		JavaObject lastValue=this.staticFields.get(name);
+		if(lastValue.writeLock!=null) {
+			lastValue.writeLock.lock();
+			if(lastValue.references>0) lastValue.references--;
+			lastValue.writeLock.unlock();
 		}
+		
+		//set value and increment its number of active references
+		this.staticFields.put(name, value);
+		if(value.writeLock!=null) {
+			value.writeLock.lock();
+			value.references++;
+			value.writeLock.unlock();
+		}
+	}
 }

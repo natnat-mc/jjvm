@@ -29,6 +29,9 @@ public class JavaObject {
 		this.references=0;
 		this.interpreter.objects.add(this);
 	}
+	protected JavaObject(JavaInterpreter interpreter) {
+		this.interpreter=interpreter;
+	}
 	
 	public boolean isPrimitive() {
 		return false;

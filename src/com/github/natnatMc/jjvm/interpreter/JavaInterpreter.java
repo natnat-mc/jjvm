@@ -15,6 +15,8 @@ public class JavaInterpreter {
 		this.classes=new HashMap<String, JavaClass>();
 		this.objects=new HashSet<JavaObject>();
 		this.lock=new ReentrantLock();
+		
+		this.createPrimitives();
 	}
 	
 	//run the garbage collector
@@ -32,6 +34,18 @@ public class JavaInterpreter {
 		}
 		
 		this.lock.unlock();
+	}
+	
+	//create primitive types
+	private void createPrimitives() {
+		this.classes.put("boolean", new JavaPrimitiveClass("boolean", this));
+		this.classes.put("byte", new JavaPrimitiveClass("byte", this));
+		this.classes.put("char", new JavaPrimitiveClass("char", this));
+		this.classes.put("short", new JavaPrimitiveClass("short", this));
+		this.classes.put("int", new JavaPrimitiveClass("int", this));
+		this.classes.put("float", new JavaPrimitiveClass("float", this));
+		this.classes.put("long", new JavaPrimitiveClass("long", this));
+		this.classes.put("double", new JavaPrimitiveClass("double", this));
 	}
 	
 	//execute a method
