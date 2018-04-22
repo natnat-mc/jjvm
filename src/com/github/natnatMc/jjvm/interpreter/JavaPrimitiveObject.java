@@ -9,7 +9,7 @@ public class JavaPrimitiveObject extends JavaObject {
 	
 	protected Number value;
 	
-	public JavaPrimitiveObject(JavaInterpreter interpreter, JavaClass type, Number value) throws JJVMException {
+	public JavaPrimitiveObject(JavaClass type, Number value, JavaInterpreter interpreter) throws JJVMException {
 		super(interpreter);
 		if(!type.isPrimitive()) throw new JJVMIllegalOperationException("Attempt to create primitive object with object class");
 		this.type=type;

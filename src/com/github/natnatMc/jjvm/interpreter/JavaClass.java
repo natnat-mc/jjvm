@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.github.natnatMc.jjvm.exceptions.JJVMCastException;
 import com.github.natnatMc.jjvm.exceptions.JJVMException;
+import com.github.natnatMc.jjvm.exceptions.JJVMIllegalOperationException;
 import com.github.natnatMc.jjvm.exceptions.JJVMNoSuchFieldException;
 import com.github.natnatMc.jjvm.exceptions.JJVMNoSuchMethodException;
 
@@ -118,18 +119,14 @@ public class JavaClass {
 		
 		//remove last value for property and decrement its number of active references
 		JavaObject lastValue=this.staticFields.get(name);
-		if(lastValue.writeLock!=null) {
-			lastValue.writeLock.lock();
-			if(lastValue.references>0) lastValue.references--;
-			lastValue.writeLock.unlock();
-		}
+		lastValue.references--;
 		
 		//set value and increment its number of active references
 		this.staticFields.put(name, value);
-		if(value.writeLock!=null) {
-			value.writeLock.lock();
-			value.references++;
-			value.writeLock.unlock();
-		}
+		value.references++;
+	}
+	//get type of array elements
+	public JavaClass getElementType() throws JJVMException {
+		throw new JJVMIllegalOperationException("Can not get type of array elements of a non-array class");
 	}
 }

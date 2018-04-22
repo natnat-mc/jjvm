@@ -1,27 +1,18 @@
 package com.github.natnatMc.jjvm.interpreter;
 
 import java.util.*;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.*;
 
 import com.github.natnatMc.jjvm.exceptions.*;
 
 public class JavaObject {
 	
-	protected ReentrantReadWriteLock lock;
-	protected ReadLock readLock;
-	protected WriteLock writeLock;
 	protected JavaClass type;
 	protected HashMap<String, JavaObject> properties;
 	protected int references;
 	protected JavaInterpreter interpreter;
 	
-	public JavaObject(JavaInterpreter interpreter, JavaClass type) {
+	public JavaObject(JavaClass type, JavaInterpreter interpreter) {
 		this.interpreter=interpreter;
-		
-		this.lock=new ReentrantReadWriteLock();
-		this.readLock=this.lock.readLock();
-		this.writeLock=this.lock.writeLock();
 		
 		this.type=type;
 		this.properties=new HashMap<String, JavaObject>();
@@ -42,7 +33,7 @@ public class JavaObject {
 	public boolean isArray() {
 		return false;
 	}
-	public JavaClass getType() {
+	public JavaClass getType() throws JJVMException {
 		return this.type;
 	}
 	
@@ -61,19 +52,11 @@ public class JavaObject {
 		
 		//remove last value for property and decrement its number of active references
 		JavaObject lastValue=this.properties.get(name);
-		if(lastValue.writeLock!=null) {
-			lastValue.writeLock.lock();
-			if(lastValue.references>0) lastValue.references--;
-			lastValue.writeLock.unlock();
-		}
+		lastValue.references--;
 		
 		//set value and increment its number of active references
 		this.properties.put(name, value);
-		if(value.writeLock!=null) {
-			value.writeLock.lock();
-			value.references++;
-			value.writeLock.unlock();
-		}
+		value.references++;
 	}
 	//read a field
 	public JavaObject getField(String name, JavaContext context) throws JJVMException {

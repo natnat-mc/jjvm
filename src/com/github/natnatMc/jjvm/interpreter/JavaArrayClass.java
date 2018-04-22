@@ -6,20 +6,19 @@ import com.github.natnatMc.jjvm.exceptions.JJVMCastException;
 import com.github.natnatMc.jjvm.exceptions.JJVMException;
 import com.github.natnatMc.jjvm.exceptions.JJVMIllegalOperationException;
 
-public class JavaPrimitiveClass extends JavaClass {
+public class JavaArrayClass extends JavaClass {
 	
-	protected JavaPrimitiveClass(String name, JavaInterpreter interpreter) {
-		this.name=name;
+	protected JavaClass type;
+	
+	protected JavaArrayClass(JavaClass type, JavaInterpreter interpreter) {
 		this.interpreter=interpreter;
+		this.name=type.name+"[]";
+		this.type=type;
 	}
 	
 	@Override
-	public boolean isPrimitive() {
+	public boolean isArray() {
 		return true;
-	}
-	@Override
-	public boolean isDoubleOrLong() {
-		return this.name.equals("double")||this.name.equals("long");
 	}
 	
 	@Override
@@ -37,15 +36,20 @@ public class JavaPrimitiveClass extends JavaClass {
 	
 	@Override
 	public JavaObject callStaticMethod(String descriptor, List<JavaObject> args, JavaContext context) throws JJVMException {
-		throw new JJVMIllegalOperationException("Attempt to call static method of primitive type");
+		throw new JJVMIllegalOperationException("Attempt to call static method of array type");
 	}
 	@Override
 	public JavaObject getField(String name, JavaContext context) throws JJVMException {
-		throw new JJVMIllegalOperationException("Attempt to get static field of primitive type");
+		throw new JJVMIllegalOperationException("Attempt to get static field of array type");
 	}
 	@Override
 	public void setField(String name, JavaObject value, JavaContext context) throws JJVMException {
-		throw new JJVMIllegalOperationException("Attempt to set static field of primitive type");
+		throw new JJVMIllegalOperationException("Attempt to set static field of array type");
+	}
+	
+	@Override
+	public JavaClass getElementType() throws JJVMException {
+		return this.type;
 	}
 	
 }
