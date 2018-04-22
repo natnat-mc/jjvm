@@ -25,7 +25,7 @@ public class ClassFlags {
 		else if(isProtected(flags)) list.add("protected");
 		if(isStatic(flags)) list.add("static");
 		if(isAbstract(flags)) list.add("abstract");
-		else if(isFinal(flags)) list.add("final");
+		if(isFinal(flags)) list.add("final");
 		if(isSuper(flags)) list.add("super");
 		if(isVolatile(flags)) list.add("volatile");
 		if(isTransient(flags)) list.add("transient");
