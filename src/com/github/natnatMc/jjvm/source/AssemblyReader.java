@@ -41,7 +41,7 @@ public class AssemblyReader {
 			
 			status.println("Reading line: "+line);
 			
-			if(line.contains("(")) {
+			if(line.contains("(") && !line.contains("\"")) {
 				//we're reading a method
 				status.println("Reading method");
 				readMethod(line);
